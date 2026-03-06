@@ -1,0 +1,33 @@
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Editor directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Dependency directories (if you ever add a build step)
+node_modules/
+.npm/
+
+# Build output (if added later)
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# GitHub Pages
+.jekyll-cache/
+_site/

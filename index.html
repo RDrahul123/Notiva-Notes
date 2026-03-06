@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Notiva — A graph-based, offline-first note-taking app. Your second brain." />
+  <meta name="theme-color" content="#111114" id="meta-theme-color" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Notiva" />
+  <meta property="og:title" content="Notiva — Your Second Brain" />
+  <meta property="og:description" content="Graph-based, offline-first note-taking app." />
+  <meta property="og:type" content="website" />
+  <title>Notiva — Your Second Brain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/editor.css" />
+  <link rel="stylesheet" href="assets/css/mobile.css" />
+</head>
+<body>
+
+  <div id="mobile-overlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="topbar-btn mobile-only" id="btn-mobile-menu" aria-label="Open menu" onclick="openMobileSidebar()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="topbar-logo">
+      <div class="logo-gem">✦</div>
+      <span class="logo-text">Notiva</span>
+    </div>
+    <div class="topbar-sep desktop-only"></div>
+    <button class="topbar-btn desktop-only active" id="btn-toggle-sidebar" aria-label="Toggle sidebar">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="8" y1="4" x2="13" y2="4" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="11" y2="10" stroke="currentColor" stroke-width="1.3"/></svg>
+    </button>
+    <div class="topbar-crumb desktop-only" aria-live="polite">
+      <span>notiva</span> / <span id="bc-folder">—</span> / <span id="bc-note">No file open</span>
+    </div>
+    <div class="topbar-search desktop-only">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.3" opacity="0.5"/><line x1="7.5" y1="7.5" x2="10.5" y2="10.5" stroke="currentColor" stroke-width="1.3" opacity="0.5"/></svg>
+      <input type="search" id="global-search" placeholder="Search notes… (Ctrl+K)" aria-label="Search notes" autocomplete="off" />
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn mobile-only" id="btn-mobile-search" aria-label="Search" onclick="toggleMobileSearch()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div class="saving-indicator desktop-only">
+        <div class="saving-dot" id="save-dot"></div>
+        <span id="save-status">Saved</span>
+      </div>
+      <div class="topbar-sep desktop-only"></div>
+      <div class="theme-pill" id="theme-pill" role="switch" aria-checked="false" aria-label="Toggle light/dark theme" tabindex="0">
+        <div class="theme-pill-bg"><span>🌙</span><span>☀️</span></div>
+        <div class="theme-pill-thumb"></div>
+      </div>
+      <div class="topbar-sep"></div>
+      <button class="topbar-btn desktop-only" id="btn-toggle-panel" aria-label="Toggle properties panel">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="9.5" r="0.8" fill="currentColor"/></svg>
+      </button>
+      <button class="topbar-btn" id="btn-graph" aria-label="Graph view">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="2" cy="4" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="12" cy="4" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="2" cy="10" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="12" cy="10" r="1.5" fill="currentColor" opacity="0.7"/><line x1="7" y1="7" x2="2" y2="4" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="12" y2="4" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="2" y2="10" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="12" y2="10" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile search bar -->
+  <div class="mobile-search-bar" id="mobile-search-bar">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4" opacity="0.5"/><line x1="9" y1="9" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/></svg>
+    <input type="search" id="mobile-search-input" placeholder="Search notes…" aria-label="Search notes" autocomplete="off" />
+    <button onclick="toggleMobileSearch()" aria-label="Close search">✕</button>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="workspace">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header mobile-only">
+        <div class="topbar-logo"><div class="logo-gem">✦</div><span>Notiva</span></div>
+        <button class="topbar-btn" onclick="closeMobileSidebar()" aria-label="Close">✕</button>
+      </div>
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" onclick="switchSideTab('files',this)">Files</button>
+        <button class="sidebar-tab" onclick="switchSideTab('search',this)">Search</button>
+        <button class="sidebar-tab" onclick="switchSideTab('tags',this)">Tags</button>
+      </div>
+      <div class="sidebar-content">
+        <div id="tab-files"></div>
+        <div id="tab-search" style="display:none">
+          <div style="padding:8px 0">
+            <input type="search" id="side-search" class="modal-input" style="margin-bottom:8px" placeholder="Search notes…" autocomplete="off" />
+            <div id="search-results" aria-live="polite"></div>
+          </div>
+        </div>
+        <div id="tab-tags" style="display:none">
+          <div id="all-tags" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="sidebar-actions">
+        <button class="btn-new" id="btn-new-note">+ New Note</button>
+        <button class="btn-new btn-icon" id="btn-new-folder" title="New Folder" aria-label="New folder">📁</button>
+      </div>
+    </nav>
+
+    <!-- EDITOR AREA -->
+    <div class="editor-area" id="editor-area">
+      <div class="tabs-bar" id="tabs-bar"></div>
+      <div class="editor-wrapper" id="editor-wrapper">
+        <div class="editor-container" id="editor-container">
+
+          <!-- Welcome -->
+          <div class="welcome-screen" id="welcome-screen">
+            <div class="welcome-icon">✦</div>
+            <h1 class="welcome-title">Welcome to Notiva</h1>
+            <p class="welcome-sub">Your graph-based knowledge workspace. Connect ideas, build your second brain.</p>
+            <div class="welcome-shortcuts">
+              <span class="sk">Ctrl+N</span><span class="sd">New note</span>
+              <span class="sk">Ctrl+K</span><span class="sd">Quick search</span>
+              <span class="sk">Ctrl+E</span><span class="sd">Toggle preview</span>
+              <span class="sk">Ctrl+G</span><span class="sd">Graph view</span>
+              <span class="sk">Ctrl+S</span><span class="sd">Save</span>
+              <span class="sk">[[Note]]</span><span class="sd">Link to a note</span>
+            </div>
+            <button class="btn-new welcome-cta" onclick="openNewNoteModal()">+ Create your first note</button>
+          </div>
+
+          <!-- Note View -->
+          <div id="note-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+            <input type="text" id="note-title" class="note-title-input" placeholder="Untitled Note" aria-label="Note title" />
+            <div class="note-meta" id="note-meta">
+              <div id="tags-display" class="tags-row"></div>
+              <span class="note-tag add" id="btn-add-tag" tabindex="0">+ tag</span>
+              <span class="note-date" id="note-date"></span>
+            </div>
+            <div class="editor-toolbar" id="editor-toolbar">
+              <div class="toolbar-group">
+                <button class="tb-btn" onclick="fmt('bold')" title="Bold"><strong>B</strong></button>
+                <button class="tb-btn" onclick="fmt('italic')" title="Italic"><em>I</em></button>
+                <button class="tb-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+                <button class="tb-btn tb-hide-xs" onclick="fmt('strikethrough')" title="Strikethrough"><s>S</s></button>
+              </div>
+              <div class="toolbar-group">
+                <button class="tb-btn" onclick="iBlock('h1')">H1</button>
+                <button class="tb-btn" onclick="iBlock('h2')">H2</button>
+                <button class="tb-btn tb-hide-xs" onclick="iBlock('h3')">H3</button>
+              </div>
+              <div class="toolbar-group">
+                <button class="tb-btn" onclick="iBlock('ul')">• List</button>
+                <button class="tb-btn tb-hide-sm" onclick="iBlock('ol')">1. List</button>
+                <button class="tb-btn tb-hide-sm" onclick="iBlock('blockquote')">❝</button>
+                <button class="tb-btn" onclick="iBlock('code')">&lt;/&gt;</button>
+              </div>
+              <div class="toolbar-group desktop-only">
+                <button class="tb-btn" onclick="insertWikiLink()">[[…]]</button>
+                <button class="tb-btn" onclick="insertHR()">—</button>
+              </div>
+              <span class="word-count desktop-only" id="word-count">0 words</span>
+              <div class="mode-toggle desktop-only">
+                <button class="mode-btn active" id="m-edit" onclick="setMode('edit')">Edit</button>
+                <button class="mode-btn" id="m-split" onclick="setMode('split')">Split</button>
+                <button class="mode-btn" id="m-preview" onclick="setMode('preview')">Preview</button>
+              </div>
+              <!-- Mobile preview toggle -->
+              <button class="tb-btn mobile-only" id="mobile-preview-btn" onclick="toggleMobilePreview()" title="Toggle Preview" style="margin-left:auto">👁</button>
+            </div>
+            <div style="flex:1;display:flex;overflow:hidden">
+              <div contenteditable="true" id="note-editor" class="note-editor"
+                   data-placeholder="Start writing… use [[ for wikilinks"
+                   spellcheck="true"></div>
+              <div id="preview-pane" class="preview-area"></div>
+            </div>
+          </div>
+
+          <!-- Graph View -->
+          <div id="graph-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+            <div class="graph-header">
+              <span class="graph-title">Graph View</span>
+              <span class="graph-sub desktop-only">— connections via [[wikilinks]]</span>
+              <button class="tb-btn" style="margin-left:auto" onclick="hideGraph()">✕ Close</button>
+            </div>
+            <div class="graph-container" id="graph-container">
+              <canvas id="graph-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel -->
+        <aside class="right-panel" id="right-panel">
+          <div class="panel-tabs">
+            <button class="ptab active" onclick="switchPanelTab('info',this)">Info</button>
+            <button class="ptab" onclick="switchPanelTab('links',this)">Links</button>
+            <button class="ptab" onclick="switchPanelTab('stats',this)">Stats</button>
+          </div>
+          <div class="panel-body" id="panel-body"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile FAB -->
+  <button class="fab mobile-only" id="fab-new" onclick="openNewNoteModal()" aria-label="New note">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><line x1="11" y1="4" x2="11" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+  </button>
+
+  <!-- MODALS -->
+  <div class="modal-overlay" id="modal-new">
+    <div class="modal">
+      <div class="modal-title">✦ Create New Note</div>
+      <input type="text" id="new-note-name" class="modal-input" placeholder="Note title…" autocomplete="off" />
+      <select id="new-note-folder" class="modal-select"></select>
+      <div class="modal-btns">
+        <button class="btn-ghost" onclick="closeModal('modal-new')">Cancel</button>
+        <button class="btn-primary" onclick="createNote()">Create</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="modal-folder">
+    <div class="modal">
+      <div class="modal-title">📁 New Folder</div>
+      <input type="text" id="new-folder-name" class="modal-input" placeholder="Folder name…" autocomplete="off" />
+      <div class="modal-btns">
+        <button class="btn-ghost" onclick="closeModal('modal-folder')">Cancel</button>
+        <button class="btn-primary" onclick="createFolder()">Create</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="modal-tag">
+    <div class="modal">
+      <div class="modal-title"># Add Tag</div>
+      <input type="text" id="new-tag-val" class="modal-input" placeholder="tag name…" autocomplete="off" />
+      <div class="modal-btns">
+        <button class="btn-ghost" onclick="closeModal('modal-tag')">Cancel</button>
+        <button class="btn-primary" onclick="addTag()">Add</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="modal-rename">
+    <div class="modal">
+      <div class="modal-title">✎ Rename Note</div>
+      <input type="text" id="rename-val" class="modal-input" placeholder="New name…" autocomplete="off" />
+      <div class="modal-btns">
+        <button class="btn-ghost" onclick="closeModal('modal-rename')">Cancel</button>
+        <button class="btn-primary" onclick="doRename()">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ctx-menu" id="ctx-menu">
+    <div class="ctx-item" onclick="ctxOpen()">📄 Open Note</div>
+    <div class="ctx-item" onclick="ctxRename()">✎ Rename</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">✕ Delete</div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="toast-dot"></div>
+    <span id="toast-msg">Saved!</span>
+  </div>
+
+  <script src="assets/js/vault.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/editor.js"></script>
+  <script src="assets/js/graph.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

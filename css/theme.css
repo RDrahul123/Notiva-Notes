@@ -1,0 +1,70 @@
+/* =============================================
+   theme.css — CSS custom properties
+   Dark and Light theme tokens
+   ============================================= */
+
+:root,
+[data-theme="dark"] {
+  --bg-primary:    #0d0d0f;
+  --bg-secondary:  #111114;
+  --bg-tertiary:   #17171b;
+  --bg-hover:      #1e1e24;
+  --bg-active:     #252530;
+  --border:        #2a2a35;
+  --text-primary:  #e8e6f0;
+  --text-secondary:#9490a8;
+  --text-muted:    #5a5670;
+  --accent:        #9d7aff;
+  --accent-dim:    #6b4fd8;
+  --accent-glow:   rgba(157,122,255,0.15);
+  --accent-2:      #ff7ab8;
+  --accent-3:      #7ae8ff;
+  --accent-4:      #7aff9d;
+  --gold:          #ffd97a;
+  --shadow:        rgba(0,0,0,0.45);
+  --shadow-lg:     rgba(0,0,0,0.65);
+  --code-bg:       #17171b;
+  --scrollbar:     #2a2a35;
+  --tab-border:    #0d0d0f;
+}
+
+[data-theme="light"] {
+  --bg-primary:    #f4f3f8;
+  --bg-secondary:  #ffffff;
+  --bg-tertiary:   #eceaf3;
+  --bg-hover:      #e4e1f0;
+  --bg-active:     #d8d4ec;
+  --border:        #d4d0e8;
+  --text-primary:  #1a1825;
+  --text-secondary:#4e4868;
+  --text-muted:    #9490a8;
+  --accent:        #6b4fd8;
+  --accent-dim:    #5038c0;
+  --accent-glow:   rgba(107,79,216,0.12);
+  --accent-2:      #c84090;
+  --accent-3:      #0e8aaa;
+  --accent-4:      #1a9850;
+  --gold:          #a07800;
+  --shadow:        rgba(0,0,0,0.10);
+  --shadow-lg:     rgba(0,0,0,0.20);
+  --code-bg:       #eceaf3;
+  --scrollbar:     #ccc8dc;
+  --tab-border:    #f4f3f8;
+}
+
+/* Apply smooth transitions on theme change */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+/* Prevent transition on page load */
+.no-transition * { transition: none !important; }

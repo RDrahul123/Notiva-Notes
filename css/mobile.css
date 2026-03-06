@@ -1,0 +1,239 @@
+/* =============================================
+   mobile.css — Responsive + mobile-first styles
+   ============================================= */
+
+/* ── VISIBILITY HELPERS ── */
+.mobile-only  { display: none !important; }
+.desktop-only { display: flex !important; }
+
+/* Mobile search bar */
+.mobile-search-bar {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mobile-search-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text-primary);
+  font-family: 'Syne', sans-serif; font-size: 14px;
+}
+.mobile-search-bar input::placeholder { color: var(--text-muted); }
+.mobile-search-bar button {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 14px; cursor: pointer; padding: 4px;
+}
+.mobile-search-bar.visible { display: flex; }
+
+/* Mobile overlay for sidebar */
+.mobile-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 299;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.mobile-overlay.visible { display: block; }
+
+/* ─────────────────────────────────────────
+   TABLET — max 900px
+───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .right-panel {
+    position: fixed;
+    top: 48px; right: 0; bottom: 0;
+    z-index: 250;
+    width: 280px;
+    transform: translateX(100%);
+    transition: transform 0.25s ease !important;
+    box-shadow: -4px 0 24px var(--shadow-lg);
+  }
+  .right-panel.open {
+    transform: translateX(0);
+  }
+
+  .tabs-bar { display: none; }
+
+  .note-title-input { padding: 20px 24px 8px; }
+  .note-meta { padding: 4px 24px 12px; }
+  .note-editor { padding: 20px 24px; }
+  .preview-area { padding: 20px 24px; }
+
+  .welcome-shortcuts { display: none; }
+}
+
+/* ─────────────────────────────────────────
+   MOBILE — max 640px
+───────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* visibility helpers */
+  .mobile-only  { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  /* topbar */
+  .topbar { padding: 0 10px; height: 52px; }
+  .logo-text { font-size: 16px; }
+  .logo-gem { width: 22px; height: 22px; font-size: 12px; }
+
+  /* sidebar — slide-in drawer */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 300;
+    width: 85vw; max-width: 320px;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    box-shadow: 4px 0 32px var(--shadow-lg);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  /* override desktop collapsed behaviour on mobile */
+  .sidebar.collapsed { width: 85vw; max-width: 320px; }
+
+  /* full height for workspace */
+  .workspace { height: calc(100dvh - 52px); }
+
+  /* hide desktop tabs bar */
+  .tabs-bar { display: none; }
+
+  /* editor padding */
+  .note-title-input { padding: 16px 16px 6px; font-size: 20px; }
+  .note-meta { padding: 4px 16px 10px; }
+  .note-editor { padding: 16px 16px; font-size: 15px; }
+  .preview-area { padding: 16px 16px; font-size: 15px; }
+
+  /* toolbar — horizontal scroll, bigger touch targets */
+  .editor-toolbar { padding: 4px 10px; gap: 2px; flex-wrap: nowrap; }
+  .toolbar-group { padding-right: 4px; }
+  .tb-btn { padding: 6px 8px; min-height: 34px; font-size: 12px; }
+  .tb-hide-xs { display: none !important; }
+  .tb-hide-sm { display: none !important; }
+
+  /* right panel — bottom sheet style on mobile */
+  .right-panel {
+    position: fixed;
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: 100%; height: auto; max-height: 70dvh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    z-index: 300;
+    box-shadow: 0 -8px 40px var(--shadow-lg);
+  }
+  .right-panel.open {
+    transform: translateY(0);
+    display: flex;
+  }
+  .right-panel::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  /* welcome screen */
+  .welcome-screen { padding: 24px 16px; gap: 12px; }
+  .welcome-icon { width: 56px; height: 56px; font-size: 24px; }
+  .welcome-title { font-size: 20px; }
+  .welcome-shortcuts { display: none; }
+  .welcome-cta { width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
+
+  /* modals */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+    width: 100%; max-width: 100%;
+    border-bottom: none;
+  }
+  .modal-input, .modal-select { font-size: 16px; padding: 12px 14px; } /* 16px prevents iOS zoom */
+
+  /* buttons in modals */
+  .modal-btns { gap: 10px; }
+  .btn-primary, .btn-ghost { padding: 12px 20px; font-size: 14px; flex: 1; justify-content: center; display: flex; }
+
+  /* tree items - larger touch targets */
+  .tree-item, .tree-folder { min-height: 44px; padding: 8px 8px; }
+
+  /* panel */
+  .panel-tabs { padding: 12px 12px 0; }
+  .ptab { padding: 8px 14px; font-size: 11px; }
+
+  /* toast - above FAB */
+  .toast { bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 88px)); font-size: 13px; }
+
+  /* FAB */
+  .fab { display: flex !important; }
+
+  /* hide extra info in topbar on tiny screens */
+  .topbar-sep { display: none; }
+  .theme-pill { width: 48px; height: 26px; }
+
+  /* context menu */
+  .ctx-menu {
+    position: fixed;
+    bottom: max(0px, env(safe-area-inset-bottom));
+    top: auto; left: 8px; right: 8px;
+    width: auto;
+    border-radius: 14px;
+    padding: 8px;
+  }
+  .ctx-item { padding: 12px 14px; font-size: 14px; min-height: 48px; }
+}
+
+/* ─────────────────────────────────────────
+   VERY SMALL — max 380px
+───────────────────────────────────────── */
+@media (max-width: 380px) {
+  .topbar { gap: 4px; }
+  .logo-gem { display: none; }
+  .logo-text { font-size: 15px; }
+  .theme-pill { width: 44px; }
+  .theme-pill-bg { font-size: 9px; }
+}
+
+/* ─────────────────────────────────────────
+   LANDSCAPE MOBILE
+───────────────────────────────────────── */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .topbar { height: 42px; }
+  .note-title-input { padding: 12px 16px 4px; font-size: 18px; }
+  .editor-toolbar { padding: 2px 10px; }
+  .tb-btn { min-height: 28px; padding: 4px 7px; }
+  .welcome-screen { padding: 16px; gap: 8px; }
+  .welcome-icon { width: 44px; height: 44px; font-size: 20px; }
+  .welcome-title { font-size: 18px; }
+  .welcome-sub { font-size: 12px; }
+}
+
+/* ─────────────────────────────────────────
+   TOUCH DEVICE — remove hover flicker
+───────────────────────────────────────── */
+@media (hover: none) {
+  .tab-close { opacity: 0.6; }
+  .tb-btn:hover { background: transparent; color: var(--text-muted); }
+  .tree-item:hover { background: transparent; color: var(--text-secondary); }
+  .tree-folder:hover { background: transparent; color: var(--text-secondary); }
+  .topbar-btn:hover { background: transparent; color: var(--text-secondary); }
+}
+
+/* ─────────────────────────────────────────
+   PRINT
+───────────────────────────────────────── */
+@media print {
+  .topbar, .sidebar, .tabs-bar,
+  .editor-toolbar, .right-panel, .fab,
+  .toast, .ctx-menu { display: none !important; }
+  .workspace { display: block; }
+  .editor-area, .editor-container, .note-view { display: block !important; overflow: visible; }
+  .note-editor { padding: 0; font-size: 12pt; }
+}
