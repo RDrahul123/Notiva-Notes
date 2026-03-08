@@ -3,6 +3,10 @@
 > A graph-based, offline-first note-taking web app inspired by Obsidian.
 > Fully mobile-friendly. No account required. All data stays in your browser.
 
+<img width="916" height="410" alt="image" src="https://github.com/user-attachments/assets/de603cd3-69de-41f0-af1c-54efa276dcb1" />
+
+<img width="896" height="395" alt="image" src="https://github.com/user-attachments/assets/5803f5bb-6f02-4c16-b4ca-be37e5ede8c8" />
+
 ## 🚀 Deploy to GitHub Pages
 
 1. Push this repo to GitHub
