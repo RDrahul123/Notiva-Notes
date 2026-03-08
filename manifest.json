@@ -1,12 +1,13 @@
 {
   "name": "Notiva — Your Second Brain",
   "short_name": "Notiva",
-  "description": "Graph-based offline note-taking app. Connect ideas, build your knowledge.",
-  "start_url": ".",
+  "description": "A graph-based, offline-first note-taking app.",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0d0d0f",
-  "theme_color": "#111114",
+  "theme_color": "#9d7aff",
   "orientation": "any",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
@@ -21,12 +22,10 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "New Note",
-      "short_name": "New",
+      "short_name": "New Note",
       "description": "Create a new note",
       "url": "./?action=new"
     }

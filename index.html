@@ -1,280 +1,2876 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="Notiva — A graph-based, offline-first note-taking app. Your second brain." />
-  <meta name="theme-color" content="#111114" id="meta-theme-color" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Notiva" />
-  <meta property="og:title" content="Notiva — Your Second Brain" />
-  <meta property="og:description" content="Graph-based, offline-first note-taking app." />
-  <meta property="og:type" content="website" />
-  <title>Notiva — Your Second Brain</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/theme.css" />
-  <link rel="stylesheet" href="assets/css/layout.css" />
-  <link rel="stylesheet" href="assets/css/components.css" />
-  <link rel="stylesheet" href="assets/css/editor.css" />
-  <link rel="stylesheet" href="assets/css/mobile.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Notiva — Your graph-based second brain. Offline-first note-taking.">
+<meta name="theme-color" content="#111114" id="meta-theme-color">
+<title>Notiva — Your Second Brain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   theme.css — CSS custom properties
+   Dark and Light theme tokens
+   ============================================= */
+
+:root,
+[data-theme="dark"] {
+  --bg-primary:    #0d0d0f;
+  --bg-secondary:  #111114;
+  --bg-tertiary:   #17171b;
+  --bg-hover:      #1e1e24;
+  --bg-active:     #252530;
+  --border:        #2a2a35;
+  --text-primary:  #e8e6f0;
+  --text-secondary:#9490a8;
+  --text-muted:    #5a5670;
+  --accent:        #9d7aff;
+  --accent-dim:    #6b4fd8;
+  --accent-glow:   rgba(157,122,255,0.15);
+  --accent-2:      #ff7ab8;
+  --accent-3:      #7ae8ff;
+  --accent-4:      #7aff9d;
+  --gold:          #ffd97a;
+  --shadow:        rgba(0,0,0,0.45);
+  --shadow-lg:     rgba(0,0,0,0.65);
+  --code-bg:       #17171b;
+  --scrollbar:     #2a2a35;
+  --tab-border:    #0d0d0f;
+}
+
+[data-theme="light"] {
+  --bg-primary:    #f4f3f8;
+  --bg-secondary:  #ffffff;
+  --bg-tertiary:   #eceaf3;
+  --bg-hover:      #e4e1f0;
+  --bg-active:     #d8d4ec;
+  --border:        #d4d0e8;
+  --text-primary:  #1a1825;
+  --text-secondary:#4e4868;
+  --text-muted:    #9490a8;
+  --accent:        #6b4fd8;
+  --accent-dim:    #5038c0;
+  --accent-glow:   rgba(107,79,216,0.12);
+  --accent-2:      #c84090;
+  --accent-3:      #0e8aaa;
+  --accent-4:      #1a9850;
+  --gold:          #a07800;
+  --shadow:        rgba(0,0,0,0.10);
+  --shadow-lg:     rgba(0,0,0,0.20);
+  --code-bg:       #eceaf3;
+  --scrollbar:     #ccc8dc;
+  --tab-border:    #f4f3f8;
+}
+
+/* Apply smooth transitions on theme change */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+/* Prevent transition on page load */
+.no-transition * { transition: none !important; }
+/* =============================================
+   layout.css — Page structure and layout
+   ============================================= */
+
+html, body {
+  height: 100%;
+  height: 100dvh; /* dynamic viewport height for mobile */
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Literata', Georgia, serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  height: 48px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 200;
+  /* safe area for notch */
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+}
+
+.topbar-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--accent);
+  letter-spacing: -0.8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.logo-gem {
+  width: 24px; height: 24px;
+  background: var(--accent-glow);
+  border: 1.5px solid var(--accent-dim);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+
+.topbar-sep {
+  width: 1px; height: 20px;
+  background: var(--border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.topbar-crumb {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-crumb span { color: var(--text-secondary); }
+
+.topbar-search {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  width: 220px;
+  flex-shrink: 0;
+}
+.topbar-search:focus-within {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.topbar-search input {
+  background: none; border: none; outline: none;
+  color: var(--text-primary);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; width: 100%;
+}
+.topbar-search input::placeholder { color: var(--text-muted); }
+
+.topbar-right {
+  display: flex; align-items: center; gap: 6px;
+  margin-left: auto;
+}
+
+/* ── WORKSPACE ── */
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.22s ease;
+}
+.sidebar.collapsed { width: 0; }
+
+.sidebar-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 8px 0;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.sidebar-tab {
+  flex: 1; padding: 6px 4px;
+  border: none; background: none;
+  color: var(--text-muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  cursor: pointer; border-radius: 6px;
+}
+.sidebar-tab:hover { color: var(--text-secondary); background: var(--bg-hover); }
+.sidebar-tab.active { color: var(--accent); background: var(--accent-glow); }
+
+.sidebar-content {
+  flex: 1; overflow-y: auto; padding: 8px;
+}
+.sidebar-content::-webkit-scrollbar { width: 3px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+
+.sidebar-actions {
+  padding: 8px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 4px;
+  flex-shrink: 0;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+/* ── EDITOR AREA ── */
+.editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.tabs-bar {
+  height: 36px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 8px;
+  gap: 2px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.tabs-bar::-webkit-scrollbar { display: none; }
+
+.editor-wrapper {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.22s ease;
+}
+.right-panel.collapsed { width: 0; }
+/* =============================================
+   components.css — UI components
+   ============================================= */
+
+/* ── BUTTONS ── */
+.topbar-btn {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.topbar-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.topbar-btn.active { background: var(--accent-glow); color: var(--accent); }
+.topbar-btn:active { transform: scale(0.92); }
+
+.btn-new {
+  flex: 1; padding: 8px 6px;
+  background: var(--accent-glow);
+  border: 1px solid var(--accent-dim);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-new:hover { background: var(--accent-dim); color: #fff; }
+.btn-new:active { transform: scale(0.97); }
+.btn-new.btn-icon { flex: 0; padding: 8px 10px; }
+
+.btn-primary {
+  padding: 9px 18px; border-radius: 8px;
+  background: var(--accent-dim); border: none;
+  color: #fff; font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:hover { background: var(--accent); }
+.btn-primary:active { transform: scale(0.96); }
+
+.btn-ghost {
+  padding: 9px 18px; border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* ── THEME PILL ── */
+.theme-pill {
+  width: 56px; height: 28px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-tertiary);
+  cursor: pointer; position: relative;
+  display: flex; align-items: center; padding: 3px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-pill-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent);
+  position: absolute; left: 3px;
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), background 0.22s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+[data-theme="light"] .theme-pill-thumb {
+  transform: translateX(27px);
+  background: var(--gold);
+}
+.theme-pill-bg {
+  width: 100%;
+  display: flex; justify-content: space-between;
+  padding: 0 4px;
+  font-size: 11px;
+  pointer-events: none; user-select: none;
+}
+
+/* ── SAVING INDICATOR ── */
+.saving-indicator {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-muted);
+}
+.saving-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent-4); flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.saving-dot.saving { animation: pulse 1s infinite; background: var(--gold); }
+
+/* ── TABS ── */
+.tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer; white-space: nowrap;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; color: var(--text-muted);
+  border: 1px solid transparent; border-bottom: none;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab:hover { color: var(--text-secondary); background: var(--bg-hover); }
+.tab.active {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border-color: var(--border);
+  border-bottom-color: var(--tab-border);
+}
+.tab-close {
+  width: 14px; height: 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; font-size: 10px;
+  opacity: 0; color: var(--text-muted);
+}
+.tab:hover .tab-close { opacity: 1; }
+.tab-close:hover { background: var(--bg-hover); color: var(--accent-2); }
+
+/* ── TREE / FILE LIST ── */
+.tree-section { margin-bottom: 4px; }
+.tree-folder {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 6px; border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+.tree-folder:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tree-folder-icon { font-size: 10px; transition: transform 0.15s; flex-shrink: 0; }
+.tree-folder.open .tree-folder-icon { transform: rotate(90deg); }
+.tree-children { padding-left: 14px; }
+
+.tree-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 6px; border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Literata', serif;
+  font-size: 13px; color: var(--text-secondary);
+  user-select: none; position: relative;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+.tree-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tree-item.active { background: var(--accent-glow); color: var(--accent); }
+.tree-item.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 2px; height: 60%; background: var(--accent); border-radius: 1px;
+}
+.tree-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--text-muted); flex-shrink: 0;
+}
+
+/* ── PANEL ── */
+.panel-tabs {
+  display: flex; gap: 2px;
+  padding: 8px 8px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ptab {
+  padding: 5px 10px; border-radius: 6px 6px 0 0;
+  border: 1px solid transparent; border-bottom: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer; color: var(--text-muted);
+}
+.ptab:hover { color: var(--text-secondary); }
+.ptab.active {
+  color: var(--accent);
+  border-color: var(--border);
+  border-bottom-color: var(--bg-secondary);
+  background: var(--bg-secondary);
+}
+.panel-body {
+  flex: 1; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom);
+}
+.panel-body::-webkit-scrollbar { width: 3px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--scrollbar); }
+.panel-section { padding: 12px; border-bottom: 1px solid var(--border); }
+.panel-section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag-chip {
+  padding: 3px 8px; border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  cursor: pointer; border: 1px solid var(--border); color: var(--text-secondary);
+}
+.tag-chip:nth-child(3n+1) { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-glow); }
+.tag-chip:nth-child(3n+2) { color: var(--accent-2); border-color: rgba(200,64,144,0.3); background: rgba(200,64,144,0.06); }
+.tag-chip:nth-child(3n+3) { color: var(--accent-3); border-color: rgba(14,138,170,0.3); background: rgba(14,138,170,0.06); }
+.linked-note {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 8px; border-radius: 6px;
+  cursor: pointer; font-size: 12px;
+  color: var(--text-secondary); font-family: 'Literata', serif;
+  min-height: 36px;
+}
+.linked-note:hover { background: var(--bg-hover); color: var(--text-primary); }
+.linked-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat-box {
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; text-align: center;
+}
+.stat-val {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+  color: var(--accent); line-height: 1;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.5px; margin-top: 3px;
+}
+
+/* ── MODALS ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 24px 80px var(--shadow-lg);
+  animation: mIn 0.2s ease;
+}
+@keyframes mIn {
+  from { opacity:0; transform: scale(0.95) translateY(-8px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.modal-title {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+  color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.3px;
+}
+.modal-input {
+  width: 100%; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 11px 14px; color: var(--text-primary);
+  font-family: 'Literata', serif; font-size: 15px;
+  outline: none; margin-bottom: 12px;
+  -webkit-appearance: none;
+}
+.modal-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 2px var(--accent-glow); }
+.modal-select {
+  width: 100%; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 11px 14px; color: var(--text-primary);
+  font-family: 'Syne', sans-serif; font-size: 13px;
+  outline: none; margin-bottom: 12px; cursor: pointer;
+  -webkit-appearance: none;
+}
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── CONTEXT MENU ── */
+.ctx-menu {
+  position: fixed; z-index: 500;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 6px;
+  min-width: 160px;
+  box-shadow: 0 8px 32px var(--shadow-lg);
+  display: none;
+}
+.ctx-menu.open { display: block; }
+.ctx-item {
+  padding: 9px 14px; border-radius: 6px;
+  font-family: 'Syne', sans-serif; font-size: 13px;
+  color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  min-height: 38px;
+  -webkit-tap-highlight-color: transparent;
+}
+.ctx-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.ctx-item.danger:hover { background: rgba(255,70,70,0.1); color: #ff4444; }
+.ctx-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 18px;
+  font-family: 'Syne', sans-serif; font-size: 13px;
+  color: var(--text-primary);
+  box-shadow: 0 8px 32px var(--shadow-lg);
+  z-index: 2000;
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: none; opacity: 0;
+  white-space: nowrap;
+  bottom: max(24px, env(safe-area-inset-bottom, 24px));
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(-50%) translateY(10px); }
+  to { opacity:1; transform: translateX(-50%) translateY(0); }
+}
+.toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-4); flex-shrink: 0; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  padding: 24px; text-align: center;
+  color: var(--text-muted);
+  font-family: 'Literata', serif;
+  font-size: 13px; font-style: italic;
+}
+
+/* ── SEARCH HIGHLIGHT ── */
+mark {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ── FAB (Floating Action Button) ── */
+.fab {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  right: max(20px, env(safe-area-inset-right, 20px));
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: none; color: #fff;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(107,79,216,0.5);
+  cursor: pointer; z-index: 300;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(107,79,216,0.65); }
+.fab:active { transform: scale(0.94); }
+/* =============================================
+   editor.css — Note editor, toolbar, preview,
+                welcome screen, graph view
+   ============================================= */
+
+/* ── WELCOME SCREEN ── */
+.welcome-screen {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px;
+  padding: 32px 24px;
+  overflow-y: auto;
+}
+.welcome-icon {
+  width: 72px; height: 72px;
+  background: var(--accent-glow);
+  border: 1.5px solid var(--accent-dim);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 0 50px var(--accent-glow);
+}
+.welcome-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(20px, 4vw, 26px);
+  font-weight: 800; color: var(--text-primary);
+  letter-spacing: -0.8px; text-align: center;
+}
+.welcome-sub {
+  font-family: 'Literata', serif;
+  font-size: 14px; color: var(--text-muted);
+  text-align: center; max-width: 320px;
+  line-height: 1.6; font-style: italic;
+}
+.welcome-shortcuts {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 7px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 20px;
+  max-width: 340px; width: 100%;
+}
+.sk {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--accent); white-space: nowrap;
+}
+.sd {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; color: var(--text-secondary);
+}
+.welcome-cta {
+  margin-top: 6px;
+  font-size: 13px; padding: 10px 20px;
+}
+
+/* ── NOTE TITLE ── */
+.note-title-input {
+  background: none; border: none; outline: none;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+  color: var(--text-primary);
+  width: 100%;
+  padding: 28px 80px 8px;
+  caret-color: var(--accent);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.note-title-input::placeholder { color: var(--text-muted); }
+
+/* ── NOTE META ── */
+.note-meta {
+  padding: 4px 80px 14px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.tags-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.note-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 20px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.note-tag:hover { border-color: var(--accent-dim); color: var(--accent); }
+.note-tag.add { border-style: dashed; color: var(--text-muted); }
+.note-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ── TOOLBAR ── */
+.editor-toolbar {
+  padding: 6px 16px;
+  display: flex; align-items: center; gap: 4px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+.editor-toolbar::-webkit-scrollbar { display: none; }
+
+.toolbar-group {
+  display: flex; gap: 2px;
+  padding-right: 6px;
+  border-right: 1px solid var(--border);
+}
+.toolbar-group:last-of-type { border-right: none; padding-right: 0; }
+
+.tb-btn {
+  padding: 5px 8px; border-radius: 5px;
+  border: none; background: transparent;
+  color: var(--text-muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 3px;
+  min-height: 28px;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.tb-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tb-btn:active { transform: scale(0.9); }
+
+.mode-toggle {
+  display: flex;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden;
+  margin-left: auto;
+}
+.mode-btn {
+  padding: 4px 10px; border: none;
+  background: transparent; color: var(--text-muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer;
+}
+.mode-btn.active { background: var(--accent-dim); color: #fff; }
+
+.word-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-muted);
+  margin-left: 6px; white-space: nowrap;
+}
+
+/* ── EDITOR ── */
+.note-editor {
+  flex: 1;
+  padding: 28px 80px;
+  overflow-y: auto;
+  outline: none;
+  font-family: 'Literata', Georgia, serif;
+  font-size: 16px; line-height: 1.8;
+  color: var(--text-primary);
+  caret-color: var(--accent);
+  background: var(--bg-primary);
+  word-break: break-word;
+}
+.note-editor::-webkit-scrollbar { width: 4px; }
+.note-editor::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+.note-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* content styles inside editor */
+.note-editor h1 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin: 20px 0 10px; }
+.note-editor h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin: 18px 0 8px; }
+.note-editor h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; margin: 14px 0 6px; color: var(--text-secondary); }
+.note-editor blockquote { border-left: 3px solid var(--accent); padding: 6px 16px; margin: 12px 0; background: var(--accent-glow); border-radius: 0 8px 8px 0; color: var(--text-secondary); font-style: italic; }
+.note-editor code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--accent-3); }
+.note-editor ul, .note-editor ol { padding-left: 24px; margin: 8px 0; }
+.note-editor li { margin-bottom: 4px; }
+.note-editor hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.note-editor .wikilink { color: var(--accent-3); border-bottom: 1px dashed var(--accent-3); cursor: pointer; }
+.note-editor .wikilink:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── PREVIEW ── */
+.preview-area {
+  flex: 1; padding: 28px 80px;
+  overflow-y: auto;
+  display: none;
+  background: var(--bg-primary);
+  word-break: break-word;
+}
+.preview-area::-webkit-scrollbar { width: 4px; }
+.preview-area::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+.preview-area h1 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
+.preview-area h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 22px 0 10px; }
+.preview-area h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; color: var(--text-secondary); margin: 16px 0 8px; }
+.preview-area p { margin-bottom: 14px; line-height: 1.8; }
+.preview-area code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--accent-3); }
+.preview-area pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 16px 0; overflow-x: auto; }
+.preview-area pre code { background: none; padding: 0; }
+.preview-area blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 16px 0; background: var(--accent-glow); border-radius: 0 8px 8px 0; color: var(--text-secondary); font-style: italic; }
+.preview-area ul, .preview-area ol { padding-left: 24px; margin-bottom: 14px; }
+.preview-area li { margin-bottom: 6px; line-height: 1.7; }
+.preview-area strong { color: var(--text-primary); font-weight: 700; }
+.preview-area em { color: var(--accent-2); font-style: italic; }
+.preview-area a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+.preview-area hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.preview-area .wikilink { color: var(--accent-3); border-bottom: 1px dashed var(--accent-3); cursor: pointer; }
+
+/* ── GRAPH ── */
+.graph-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Syne', sans-serif; font-size: 12px;
+  flex-shrink: 0;
+}
+.graph-title { color: var(--accent); font-weight: 700; }
+.graph-sub { color: var(--text-muted); }
+
+.graph-container {
+  flex: 1; overflow: hidden; position: relative;
+}
+[data-theme="dark"] .graph-container {
+  background: radial-gradient(ellipse at center, #14131e 0%, #0d0d0f 72%);
+}
+[data-theme="light"] .graph-container {
+  background: radial-gradient(ellipse at center, #eae6f8 0%, #f4f3f8 72%);
+}
+#graph-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+/* =============================================
+   mobile.css — Responsive + mobile-first styles
+   ============================================= */
+
+/* ── VISIBILITY HELPERS ── */
+.mobile-only  { display: none !important; }
+.desktop-only { display: flex !important; }
+
+/* Mobile search bar */
+.mobile-search-bar {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mobile-search-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text-primary);
+  font-family: 'Syne', sans-serif; font-size: 14px;
+}
+.mobile-search-bar input::placeholder { color: var(--text-muted); }
+.mobile-search-bar button {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 14px; cursor: pointer; padding: 4px;
+}
+.mobile-search-bar.visible { display: flex; }
+
+/* Mobile overlay for sidebar */
+.mobile-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 299;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.mobile-overlay.visible { display: block; }
+
+/* ─────────────────────────────────────────
+   TABLET — max 900px
+───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .right-panel {
+    position: fixed;
+    top: 48px; right: 0; bottom: 0;
+    z-index: 250;
+    width: 280px;
+    transform: translateX(100%);
+    transition: transform 0.25s ease !important;
+    box-shadow: -4px 0 24px var(--shadow-lg);
+  }
+  .right-panel.open {
+    transform: translateX(0);
+  }
+
+  .tabs-bar { display: none; }
+
+  .note-title-input { padding: 20px 24px 8px; }
+  .note-meta { padding: 4px 24px 12px; }
+  .note-editor { padding: 20px 24px; }
+  .preview-area { padding: 20px 24px; }
+
+  .welcome-shortcuts { display: none; }
+}
+
+/* ─────────────────────────────────────────
+   MOBILE — max 640px
+───────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* visibility helpers */
+  .mobile-only  { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  /* topbar */
+  .topbar { padding: 0 10px; height: 52px; }
+  .logo-text { font-size: 16px; }
+  .logo-gem { width: 22px; height: 22px; font-size: 12px; }
+
+  /* sidebar — slide-in drawer */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 300;
+    width: 85vw; max-width: 320px;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    box-shadow: 4px 0 32px var(--shadow-lg);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  /* override desktop collapsed behaviour on mobile */
+  .sidebar.collapsed { width: 85vw; max-width: 320px; }
+
+  /* full height for workspace */
+  .workspace { height: calc(100dvh - 52px); }
+
+  /* hide desktop tabs bar */
+  .tabs-bar { display: none; }
+
+  /* editor padding */
+  .note-title-input { padding: 16px 16px 6px; font-size: 20px; }
+  .note-meta { padding: 4px 16px 10px; }
+  .note-editor { padding: 16px 16px; font-size: 15px; }
+  .preview-area { padding: 16px 16px; font-size: 15px; }
+
+  /* toolbar — horizontal scroll, bigger touch targets */
+  .editor-toolbar { padding: 4px 10px; gap: 2px; flex-wrap: nowrap; }
+  .toolbar-group { padding-right: 4px; }
+  .tb-btn { padding: 6px 8px; min-height: 34px; font-size: 12px; }
+  .tb-hide-xs { display: none !important; }
+  .tb-hide-sm { display: none !important; }
+
+  /* right panel — bottom sheet style on mobile */
+  .right-panel {
+    position: fixed;
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: 100%; height: auto; max-height: 70dvh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    z-index: 300;
+    box-shadow: 0 -8px 40px var(--shadow-lg);
+  }
+  .right-panel.open {
+    transform: translateY(0);
+    display: flex;
+  }
+  .right-panel::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  /* welcome screen */
+  .welcome-screen { padding: 24px 16px; gap: 12px; }
+  .welcome-icon { width: 56px; height: 56px; font-size: 24px; }
+  .welcome-title { font-size: 20px; }
+  .welcome-shortcuts { display: none; }
+  .welcome-cta { width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
+
+  /* modals */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+    width: 100%; max-width: 100%;
+    border-bottom: none;
+  }
+  .modal-input, .modal-select { font-size: 16px; padding: 12px 14px; } /* 16px prevents iOS zoom */
+
+  /* buttons in modals */
+  .modal-btns { gap: 10px; }
+  .btn-primary, .btn-ghost { padding: 12px 20px; font-size: 14px; flex: 1; justify-content: center; display: flex; }
+
+  /* tree items - larger touch targets */
+  .tree-item, .tree-folder { min-height: 44px; padding: 8px 8px; }
+
+  /* panel */
+  .panel-tabs { padding: 12px 12px 0; }
+  .ptab { padding: 8px 14px; font-size: 11px; }
+
+  /* toast - above FAB */
+  .toast { bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 88px)); font-size: 13px; }
+
+  /* FAB */
+  .fab { display: flex !important; }
+
+  /* hide extra info in topbar on tiny screens */
+  .topbar-sep { display: none; }
+  .theme-pill { width: 48px; height: 26px; }
+
+  /* context menu */
+  .ctx-menu {
+    position: fixed;
+    bottom: max(0px, env(safe-area-inset-bottom));
+    top: auto; left: 8px; right: 8px;
+    width: auto;
+    border-radius: 14px;
+    padding: 8px;
+  }
+  .ctx-item { padding: 12px 14px; font-size: 14px; min-height: 48px; }
+}
+
+/* ─────────────────────────────────────────
+   VERY SMALL — max 380px
+───────────────────────────────────────── */
+@media (max-width: 380px) {
+  .topbar { gap: 4px; }
+  .logo-gem { display: none; }
+  .logo-text { font-size: 15px; }
+  .theme-pill { width: 44px; }
+  .theme-pill-bg { font-size: 9px; }
+}
+
+/* ─────────────────────────────────────────
+   LANDSCAPE MOBILE
+───────────────────────────────────────── */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .topbar { height: 42px; }
+  .note-title-input { padding: 12px 16px 4px; font-size: 18px; }
+  .editor-toolbar { padding: 2px 10px; }
+  .tb-btn { min-height: 28px; padding: 4px 7px; }
+  .welcome-screen { padding: 16px; gap: 8px; }
+  .welcome-icon { width: 44px; height: 44px; font-size: 20px; }
+  .welcome-title { font-size: 18px; }
+  .welcome-sub { font-size: 12px; }
+}
+
+/* ─────────────────────────────────────────
+   TOUCH DEVICE — remove hover flicker
+───────────────────────────────────────── */
+@media (hover: none) {
+  .tab-close { opacity: 0.6; }
+  .tb-btn:hover { background: transparent; color: var(--text-muted); }
+  .tree-item:hover { background: transparent; color: var(--text-secondary); }
+  .tree-folder:hover { background: transparent; color: var(--text-secondary); }
+  .topbar-btn:hover { background: transparent; color: var(--text-secondary); }
+}
+
+/* ─────────────────────────────────────────
+   PRINT
+───────────────────────────────────────── */
+@media print {
+  .topbar, .sidebar, .tabs-bar,
+  .editor-toolbar, .right-panel, .fab,
+  .toast, .ctx-menu { display: none !important; }
+  .workspace { display: block; }
+  .editor-area, .editor-container, .note-view { display: block !important; overflow: visible; }
+  .note-editor { padding: 0; font-size: 12pt; }
+}
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-bottom-nav {
+  display: none;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  height: 60px;
+  height: calc(60px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  flex-shrink: 0;
+  z-index: 200;
+}
+.mbn-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; border: none; background: none;
+  color: var(--text-muted); font-family: 'Syne', sans-serif;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; cursor: pointer; padding: 6px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.mbn-btn.active { color: var(--accent); }
+.mbn-new-btn { color: var(--accent) !important; }
+@media (max-width: 640px) {
+  .mobile-bottom-nav { display: flex; justify-content: space-around; align-items: stretch; }
+  .toast { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+/* note-view flex */
+#note-view { display: flex; flex: 1; flex-direction: column; overflow: hidden; }
+.editor-split-wrapper { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+/* sidebar overlay */
+#sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 299;
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+}
+#sidebar-overlay.visible { display: block; }
+/* right panel open state (desktop) */
+.right-panel { transition: width 0.22s ease !important; }
+
+</style>
 </head>
 <body>
 
-  <div id="mobile-overlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
-
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <button class="topbar-btn mobile-only" id="btn-mobile-menu" aria-label="Open menu" onclick="openMobileSidebar()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </button>
-    <div class="topbar-logo">
-      <div class="logo-gem">✦</div>
-      <span class="logo-text">Notiva</span>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-gem">✦</div>
+    <span class="logo-text">Notiva</span>
+  </div>
+  <div class="topbar-sep"></div>
+  <button class="topbar-btn active" id="btn-toggle-sidebar" title="Toggle Sidebar (Ctrl+\\)">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="8" y1="4" x2="13" y2="4" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="11" y2="10" stroke="currentColor" stroke-width="1.3"/></svg>
+  </button>
+  <div class="topbar-crumb"><span>notiva</span> / <span id="bc-folder">—</span> / <span id="bc-note">No file open</span></div>
+  <div class="topbar-search desktop-only">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" opacity=".5"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.3"/><line x1="7.5" y1="7.5" x2="10.5" y2="10.5" stroke="currentColor" stroke-width="1.3"/></svg>
+    <input type="search" id="global-search" placeholder="Search… (Ctrl+K)" autocomplete="off">
+  </div>
+  <div class="topbar-right">
+    <div class="saving-indicator">
+      <div class="saving-dot" id="save-dot"></div>
+      <span id="save-status" class="desktop-only">Saved</span>
     </div>
     <div class="topbar-sep desktop-only"></div>
-    <button class="topbar-btn desktop-only active" id="btn-toggle-sidebar" aria-label="Toggle sidebar">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="8" y1="4" x2="13" y2="4" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="11" y2="10" stroke="currentColor" stroke-width="1.3"/></svg>
+    <button class="theme-pill" id="theme-pill" title="Toggle theme" role="switch" aria-checked="false">
+      <div class="theme-pill-bg"><span>🌙</span><span>☀️</span></div>
+      <div class="theme-pill-thumb"></div>
     </button>
-    <div class="topbar-crumb desktop-only" aria-live="polite">
-      <span>notiva</span> / <span id="bc-folder">—</span> / <span id="bc-note">No file open</span>
-    </div>
-    <div class="topbar-search desktop-only">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.3" opacity="0.5"/><line x1="7.5" y1="7.5" x2="10.5" y2="10.5" stroke="currentColor" stroke-width="1.3" opacity="0.5"/></svg>
-      <input type="search" id="global-search" placeholder="Search notes… (Ctrl+K)" aria-label="Search notes" autocomplete="off" />
-    </div>
-    <div class="topbar-right">
-      <button class="topbar-btn mobile-only" id="btn-mobile-search" aria-label="Search" onclick="toggleMobileSearch()">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      </button>
-      <div class="saving-indicator desktop-only">
-        <div class="saving-dot" id="save-dot"></div>
-        <span id="save-status">Saved</span>
-      </div>
-      <div class="topbar-sep desktop-only"></div>
-      <div class="theme-pill" id="theme-pill" role="switch" aria-checked="false" aria-label="Toggle light/dark theme" tabindex="0">
-        <div class="theme-pill-bg"><span>🌙</span><span>☀️</span></div>
-        <div class="theme-pill-thumb"></div>
-      </div>
-      <div class="topbar-sep"></div>
-      <button class="topbar-btn desktop-only" id="btn-toggle-panel" aria-label="Toggle properties panel">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="9.5" r="0.8" fill="currentColor"/></svg>
-      </button>
-      <button class="topbar-btn" id="btn-graph" aria-label="Graph view">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="2" cy="4" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="12" cy="4" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="2" cy="10" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="12" cy="10" r="1.5" fill="currentColor" opacity="0.7"/><line x1="7" y1="7" x2="2" y2="4" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="12" y2="4" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="2" y2="10" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="12" y2="10" stroke="currentColor" stroke-width="1"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- Mobile search bar -->
-  <div class="mobile-search-bar" id="mobile-search-bar">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4" opacity="0.5"/><line x1="9" y1="9" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/></svg>
-    <input type="search" id="mobile-search-input" placeholder="Search notes…" aria-label="Search notes" autocomplete="off" />
-    <button onclick="toggleMobileSearch()" aria-label="Close search">✕</button>
+    <div class="topbar-sep"></div>
+    <button class="topbar-btn mobile-only" id="btn-mobile-search" title="Search">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" stroke-width="1.5"/></svg>
+    </button>
+    <button class="topbar-btn" id="btn-toggle-panel" title="Properties Panel">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="9.5" r=".8" fill="currentColor"/></svg>
+    </button>
+    <button class="topbar-btn" id="btn-graph" title="Graph View (Ctrl+G)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="1.5" fill="currentColor" opacity=".7"/><circle cx="2" cy="4" r="1.5" fill="currentColor" opacity=".7"/><circle cx="12" cy="4" r="1.5" fill="currentColor" opacity=".7"/><circle cx="2" cy="10" r="1.5" fill="currentColor" opacity=".7"/><circle cx="12" cy="10" r="1.5" fill="currentColor" opacity=".7"/><line x1="7" y1="7" x2="2" y2="4" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="12" y2="4" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="2" y2="10" stroke="currentColor" stroke-width="1"/><line x1="7" y1="7" x2="12" y2="10" stroke="currentColor" stroke-width="1"/></svg>
+    </button>
   </div>
+</header>
 
-  <!-- WORKSPACE -->
-  <div class="workspace">
+<!-- MOBILE SEARCH BAR -->
+<div id="mobile-search-bar" class="mobile-search-bar" aria-hidden="true">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.5"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/><line x1="9" y1="9" x2="13" y2="13" stroke="currentColor" stroke-width="1.3"/></svg>
+  <input type="search" id="mobile-search-input" placeholder="Search notes…" autocomplete="off">
+  <button id="btn-close-mobile-search">✕</button>
+</div>
 
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-      <div class="sidebar-header mobile-only">
-        <div class="topbar-logo"><div class="logo-gem">✦</div><span>Notiva</span></div>
-        <button class="topbar-btn" onclick="closeMobileSidebar()" aria-label="Close">✕</button>
-      </div>
-      <div class="sidebar-tabs">
-        <button class="sidebar-tab active" onclick="switchSideTab('files',this)">Files</button>
-        <button class="sidebar-tab" onclick="switchSideTab('search',this)">Search</button>
-        <button class="sidebar-tab" onclick="switchSideTab('tags',this)">Tags</button>
-      </div>
-      <div class="sidebar-content">
-        <div id="tab-files"></div>
-        <div id="tab-search" style="display:none">
-          <div style="padding:8px 0">
-            <input type="search" id="side-search" class="modal-input" style="margin-bottom:8px" placeholder="Search notes…" autocomplete="off" />
-            <div id="search-results" aria-live="polite"></div>
-          </div>
+<!-- WORKSPACE -->
+<div class="workspace" id="workspace">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div id="sidebar-overlay" aria-hidden="true"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="switchSideTab('files',this)">Files</button>
+      <button class="sidebar-tab" onclick="switchSideTab('search',this)">Search</button>
+      <button class="sidebar-tab" onclick="switchSideTab('tags',this)">Tags</button>
+    </div>
+    <div class="sidebar-content">
+      <div id="tab-files"></div>
+      <div id="tab-search" style="display:none">
+        <div style="padding:6px 0">
+          <input type="search" id="side-search" class="modal-input" style="margin-bottom:8px;font-size:13px" placeholder="Search or #tag…" autocomplete="off">
+          <div id="search-results"></div>
         </div>
-        <div id="tab-tags" style="display:none">
-          <div id="all-tags" aria-live="polite"></div>
-        </div>
       </div>
-      <div class="sidebar-actions">
-        <button class="btn-new" id="btn-new-note">+ New Note</button>
-        <button class="btn-new btn-icon" id="btn-new-folder" title="New Folder" aria-label="New folder">📁</button>
-      </div>
-    </nav>
-
-    <!-- EDITOR AREA -->
-    <div class="editor-area" id="editor-area">
-      <div class="tabs-bar" id="tabs-bar"></div>
-      <div class="editor-wrapper" id="editor-wrapper">
-        <div class="editor-container" id="editor-container">
-
-          <!-- Welcome -->
-          <div class="welcome-screen" id="welcome-screen">
-            <div class="welcome-icon">✦</div>
-            <h1 class="welcome-title">Welcome to Notiva</h1>
-            <p class="welcome-sub">Your graph-based knowledge workspace. Connect ideas, build your second brain.</p>
-            <div class="welcome-shortcuts">
-              <span class="sk">Ctrl+N</span><span class="sd">New note</span>
-              <span class="sk">Ctrl+K</span><span class="sd">Quick search</span>
-              <span class="sk">Ctrl+E</span><span class="sd">Toggle preview</span>
-              <span class="sk">Ctrl+G</span><span class="sd">Graph view</span>
-              <span class="sk">Ctrl+S</span><span class="sd">Save</span>
-              <span class="sk">[[Note]]</span><span class="sd">Link to a note</span>
-            </div>
-            <button class="btn-new welcome-cta" onclick="openNewNoteModal()">+ Create your first note</button>
-          </div>
-
-          <!-- Note View -->
-          <div id="note-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
-            <input type="text" id="note-title" class="note-title-input" placeholder="Untitled Note" aria-label="Note title" />
-            <div class="note-meta" id="note-meta">
-              <div id="tags-display" class="tags-row"></div>
-              <span class="note-tag add" id="btn-add-tag" tabindex="0">+ tag</span>
-              <span class="note-date" id="note-date"></span>
-            </div>
-            <div class="editor-toolbar" id="editor-toolbar">
-              <div class="toolbar-group">
-                <button class="tb-btn" onclick="fmt('bold')" title="Bold"><strong>B</strong></button>
-                <button class="tb-btn" onclick="fmt('italic')" title="Italic"><em>I</em></button>
-                <button class="tb-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
-                <button class="tb-btn tb-hide-xs" onclick="fmt('strikethrough')" title="Strikethrough"><s>S</s></button>
-              </div>
-              <div class="toolbar-group">
-                <button class="tb-btn" onclick="iBlock('h1')">H1</button>
-                <button class="tb-btn" onclick="iBlock('h2')">H2</button>
-                <button class="tb-btn tb-hide-xs" onclick="iBlock('h3')">H3</button>
-              </div>
-              <div class="toolbar-group">
-                <button class="tb-btn" onclick="iBlock('ul')">• List</button>
-                <button class="tb-btn tb-hide-sm" onclick="iBlock('ol')">1. List</button>
-                <button class="tb-btn tb-hide-sm" onclick="iBlock('blockquote')">❝</button>
-                <button class="tb-btn" onclick="iBlock('code')">&lt;/&gt;</button>
-              </div>
-              <div class="toolbar-group desktop-only">
-                <button class="tb-btn" onclick="insertWikiLink()">[[…]]</button>
-                <button class="tb-btn" onclick="insertHR()">—</button>
-              </div>
-              <span class="word-count desktop-only" id="word-count">0 words</span>
-              <div class="mode-toggle desktop-only">
-                <button class="mode-btn active" id="m-edit" onclick="setMode('edit')">Edit</button>
-                <button class="mode-btn" id="m-split" onclick="setMode('split')">Split</button>
-                <button class="mode-btn" id="m-preview" onclick="setMode('preview')">Preview</button>
-              </div>
-              <!-- Mobile preview toggle -->
-              <button class="tb-btn mobile-only" id="mobile-preview-btn" onclick="toggleMobilePreview()" title="Toggle Preview" style="margin-left:auto">👁</button>
-            </div>
-            <div style="flex:1;display:flex;overflow:hidden">
-              <div contenteditable="true" id="note-editor" class="note-editor"
-                   data-placeholder="Start writing… use [[ for wikilinks"
-                   spellcheck="true"></div>
-              <div id="preview-pane" class="preview-area"></div>
-            </div>
-          </div>
-
-          <!-- Graph View -->
-          <div id="graph-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
-            <div class="graph-header">
-              <span class="graph-title">Graph View</span>
-              <span class="graph-sub desktop-only">— connections via [[wikilinks]]</span>
-              <button class="tb-btn" style="margin-left:auto" onclick="hideGraph()">✕ Close</button>
-            </div>
-            <div class="graph-container" id="graph-container">
-              <canvas id="graph-canvas"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Panel -->
-        <aside class="right-panel" id="right-panel">
-          <div class="panel-tabs">
-            <button class="ptab active" onclick="switchPanelTab('info',this)">Info</button>
-            <button class="ptab" onclick="switchPanelTab('links',this)">Links</button>
-            <button class="ptab" onclick="switchPanelTab('stats',this)">Stats</button>
-          </div>
-          <div class="panel-body" id="panel-body"></div>
-        </aside>
+      <div id="tab-tags" style="display:none">
+        <div id="all-tags"></div>
       </div>
     </div>
-  </div>
+    <div class="sidebar-actions">
+      <button class="btn-new" id="btn-new-note">+ New Note</button>
+      <button class="btn-new btn-icon" id="btn-new-folder" title="New Folder">📁</button>
+    </div>
+  </aside>
 
-  <!-- Mobile FAB -->
-  <button class="fab mobile-only" id="fab-new" onclick="openNewNoteModal()" aria-label="New note">
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><line x1="11" y1="4" x2="11" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+  <!-- EDITOR AREA -->
+  <main class="editor-area">
+    <div class="tabs-bar" id="tabs-bar"></div>
+    <div class="editor-wrapper">
+      <div class="editor-container" id="editor-container">
+
+        <!-- Welcome -->
+        <div class="welcome-screen" id="welcome-screen">
+          <div class="welcome-icon">✦</div>
+          <div class="welcome-title">Welcome to Notiva</div>
+          <div class="welcome-sub">Your graph-based knowledge workspace. Connect ideas, build your second brain.</div>
+          <div class="welcome-shortcuts">
+            <span class="sk">Ctrl+N</span><span class="sd">New note</span>
+            <span class="sk">Ctrl+K</span><span class="sd">Quick search</span>
+            <span class="sk">Ctrl+E</span><span class="sd">Toggle preview</span>
+            <span class="sk">Ctrl+G</span><span class="sd">Graph view</span>
+            <span class="sk">Ctrl+S</span><span class="sd">Save</span>
+            <span class="sk">[[Note]]</span><span class="sd">Link a note</span>
+          </div>
+          <button class="btn-new welcome-cta" id="welcome-new-btn" style="max-width:200px;margin-top:4px">+ Create First Note</button>
+        </div>
+
+        <!-- Note View -->
+        <div id="note-view" style="display:none">
+          <input type="text" id="note-title" class="note-title-input" placeholder="Untitled Note">
+          <div class="note-meta">
+            <div id="tags-display" class="tags-row"></div>
+            <button class="note-tag add" id="btn-add-tag">+ tag</button>
+            <span class="note-date" id="note-date"></span>
+          </div>
+          <div class="editor-toolbar">
+            <div class="toolbar-group">
+              <button class="tb-btn" onclick="fmt('bold')"><strong>B</strong></button>
+              <button class="tb-btn" onclick="fmt('italic')"><em>I</em></button>
+              <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
+              <button class="tb-btn tb-hide-sm" onclick="fmt('strikethrough')"><s>S</s></button>
+            </div>
+            <div class="toolbar-group">
+              <button class="tb-btn" onclick="iBlock('h1')">H1</button>
+              <button class="tb-btn" onclick="iBlock('h2')">H2</button>
+              <button class="tb-btn tb-hide-xs" onclick="iBlock('h3')">H3</button>
+            </div>
+            <div class="toolbar-group tb-hide-sm">
+              <button class="tb-btn" onclick="iBlock('ul')">• List</button>
+              <button class="tb-btn" onclick="iBlock('ol')">1. List</button>
+              <button class="tb-btn" onclick="iBlock('blockquote')">❝</button>
+              <button class="tb-btn" onclick="iBlock('code')">Code</button>
+            </div>
+            <div class="toolbar-group tb-hide-sm">
+              <button class="tb-btn" onclick="insertWikiLink()">[[link]]</button>
+              <button class="tb-btn" onclick="insertHR()">—</button>
+            </div>
+            <span class="word-count" id="word-count">0 words</span>
+            <div class="mode-toggle">
+              <button class="mode-btn active" id="m-edit" onclick="setMode('edit')">Edit</button>
+              <button class="mode-btn" id="m-split" onclick="setMode('split')">Split</button>
+              <button class="mode-btn" id="m-preview" onclick="setMode('preview')">Preview</button>
+            </div>
+          </div>
+          <div class="editor-split-wrapper">
+            <div contenteditable="true" id="note-editor" class="note-editor" data-placeholder="Start writing… use [[ for wikilinks" spellcheck="true"></div>
+            <div id="preview-pane" class="preview-area"></div>
+          </div>
+        </div>
+
+        <!-- Graph View -->
+        <div id="graph-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+          <div class="graph-header">
+            <span class="graph-title">Graph View</span>
+            <span class="graph-sub">connections via [[wikilinks]]</span>
+            <button class="tb-btn" style="margin-left:auto" onclick="hideGraph()">✕ Close</button>
+          </div>
+          <div class="graph-container" id="graph-container">
+            <canvas id="graph-canvas"></canvas>
+          </div>
+        </div>
+
+      </div><!-- /editor-container -->
+
+      <!-- Right Panel -->
+      <aside class="right-panel collapsed" id="right-panel">
+        <div class="panel-tabs">
+          <button class="ptab active" onclick="switchPanelTab('info',this)">Info</button>
+          <button class="ptab" onclick="switchPanelTab('links',this)">Links</button>
+          <button class="ptab" onclick="switchPanelTab('stats',this)">Stats</button>
+        </div>
+        <div class="panel-body" id="panel-body"></div>
+      </aside>
+
+    </div><!-- /editor-wrapper -->
+  </main>
+
+</div><!-- /workspace -->
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <button class="mbn-btn active" id="mbn-notes" onclick="mobileSwitchView('notes')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="6" y1="7" x2="14" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.3"/><line x1="6" y1="13" x2="10" y2="13" stroke="currentColor" stroke-width="1.3"/></svg>
+    <span>Notes</span>
   </button>
+  <button class="mbn-btn" id="mbn-editor" onclick="mobileSwitchView('editor')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 16l1.5-4 8-8 2.5 2.5-8 8L4 16z" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="11.5" y1="5.5" x2="14" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span>Edit</span>
+  </button>
+  <button class="mbn-btn mbn-new-btn" onclick="openNewNoteModal()">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10" stroke="currentColor" stroke-width="1.5" fill="var(--accent-glow)"/><line x1="11" y1="6" x2="11" y2="16" stroke="currentColor" stroke-width="2"/><line x1="6" y1="11" x2="16" y2="11" stroke="currentColor" stroke-width="2"/></svg>
+    <span>New</span>
+  </button>
+  <button class="mbn-btn" id="mbn-graph" onclick="mobileSwitchView('graph')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2" fill="currentColor" opacity=".7"/><circle cx="3" cy="6" r="2" fill="currentColor" opacity=".7"/><circle cx="17" cy="6" r="2" fill="currentColor" opacity=".7"/><circle cx="3" cy="14" r="2" fill="currentColor" opacity=".7"/><circle cx="17" cy="14" r="2" fill="currentColor" opacity=".7"/><line x1="10" y1="10" x2="3" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="10" y1="10" x2="17" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="10" y1="10" x2="3" y2="14" stroke="currentColor" stroke-width="1.2"/><line x1="10" y1="10" x2="17" y2="14" stroke="currentColor" stroke-width="1.2"/></svg>
+    <span>Graph</span>
+  </button>
+  <button class="mbn-btn" id="mbn-info" onclick="mobileSwitchView('info')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="10" y2="14" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="6.5" r="1" fill="currentColor"/></svg>
+    <span>Info</span>
+  </button>
+</nav>
 
-  <!-- MODALS -->
-  <div class="modal-overlay" id="modal-new">
-    <div class="modal">
-      <div class="modal-title">✦ Create New Note</div>
-      <input type="text" id="new-note-name" class="modal-input" placeholder="Note title…" autocomplete="off" />
-      <select id="new-note-folder" class="modal-select"></select>
-      <div class="modal-btns">
-        <button class="btn-ghost" onclick="closeModal('modal-new')">Cancel</button>
-        <button class="btn-primary" onclick="createNote()">Create</button>
-      </div>
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-new">
+  <div class="modal">
+    <div class="modal-title">✦ Create New Note</div>
+    <input type="text" id="new-note-name" class="modal-input" placeholder="Note title…" autocomplete="off">
+    <select id="new-note-folder" class="modal-select"></select>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('modal-new')">Cancel</button>
+      <button class="btn-primary" onclick="createNote()">Create</button>
     </div>
   </div>
-  <div class="modal-overlay" id="modal-folder">
-    <div class="modal">
-      <div class="modal-title">📁 New Folder</div>
-      <input type="text" id="new-folder-name" class="modal-input" placeholder="Folder name…" autocomplete="off" />
-      <div class="modal-btns">
-        <button class="btn-ghost" onclick="closeModal('modal-folder')">Cancel</button>
-        <button class="btn-primary" onclick="createFolder()">Create</button>
-      </div>
+</div>
+
+<div class="modal-overlay" id="modal-folder">
+  <div class="modal">
+    <div class="modal-title">📁 New Folder</div>
+    <input type="text" id="new-folder-name" class="modal-input" placeholder="Folder name…" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('modal-folder')">Cancel</button>
+      <button class="btn-primary" onclick="createFolder()">Create</button>
     </div>
   </div>
-  <div class="modal-overlay" id="modal-tag">
-    <div class="modal">
-      <div class="modal-title"># Add Tag</div>
-      <input type="text" id="new-tag-val" class="modal-input" placeholder="tag name…" autocomplete="off" />
-      <div class="modal-btns">
-        <button class="btn-ghost" onclick="closeModal('modal-tag')">Cancel</button>
-        <button class="btn-primary" onclick="addTag()">Add</button>
-      </div>
+</div>
+
+<div class="modal-overlay" id="modal-tag">
+  <div class="modal">
+    <div class="modal-title"># Add Tag</div>
+    <input type="text" id="new-tag-val" class="modal-input" placeholder="tag name…" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('modal-tag')">Cancel</button>
+      <button class="btn-primary" onclick="addTag()">Add</button>
     </div>
   </div>
-  <div class="modal-overlay" id="modal-rename">
-    <div class="modal">
-      <div class="modal-title">✎ Rename Note</div>
-      <input type="text" id="rename-val" class="modal-input" placeholder="New name…" autocomplete="off" />
-      <div class="modal-btns">
-        <button class="btn-ghost" onclick="closeModal('modal-rename')">Cancel</button>
-        <button class="btn-primary" onclick="doRename()">Rename</button>
-      </div>
+</div>
+
+<div class="modal-overlay" id="modal-rename">
+  <div class="modal">
+    <div class="modal-title">✎ Rename Note</div>
+    <input type="text" id="rename-val" class="modal-input" placeholder="New name…" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('modal-rename')">Cancel</button>
+      <button class="btn-primary" onclick="doRename()">Rename</button>
     </div>
   </div>
+</div>
 
-  <div class="ctx-menu" id="ctx-menu">
-    <div class="ctx-item" onclick="ctxOpen()">📄 Open Note</div>
-    <div class="ctx-item" onclick="ctxRename()">✎ Rename</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item danger" onclick="ctxDelete()">✕ Delete</div>
-  </div>
+<!-- Context Menu -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-item" onclick="ctxOpen()">📄 Open Note</div>
+  <div class="ctx-item" onclick="ctxRename()">✎ Rename</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" onclick="ctxDelete()">✕ Delete</div>
+</div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite">
-    <div class="toast-dot"></div>
-    <span id="toast-msg">Saved!</span>
-  </div>
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">Saved!</span>
+</div>
 
-  <script src="assets/js/vault.js"></script>
-  <script src="assets/js/ui.js"></script>
-  <script src="assets/js/editor.js"></script>
-  <script src="assets/js/graph.js"></script>
-  <script src="assets/js/app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
+<script>
+
+// === state.js ===
+/* ═══════════════════════════════════════════════
+   js/state.js  —  App state, vault data, persistence
+   ═══════════════════════════════════════════════ */
+'use strict';
+
+const DEFAULT_VAULT = {
+  folders: [
+    { id: 'f1', name: 'Getting Started', open: true },
+    { id: 'f2', name: 'Projects', open: false },
+    { id: 'f3', name: 'Daily Notes', open: false }
+  ],
+  notes: [
+    {
+      id: 'n1', folderId: 'f1', title: 'Welcome to Notiva',
+      content: `Welcome to <strong>Notiva</strong> — your personal knowledge management system.<br><br>
+Notiva is a fully offline note-taking app inspired by Obsidian. Notes are saved automatically.<br><br>
+<h2>Features</h2>
+<ul>
+<li>Rich text editing with formatting toolbar</li>
+<li>Wikilinks with [[double brackets]] to connect notes</li>
+<li>Folder &amp; tag organisation</li>
+<li>Interactive graph view (Ctrl+G)</li>
+<li>Split edit/preview mode (Ctrl+E)</li>
+<li>Full-text search (Ctrl+K)</li>
+<li>🌙 Dark &amp; ☀️ Light theme toggle</li>
+<li>📱 Fully mobile-friendly</li>
+</ul>
+<br>
+<blockquote>Use [[Note Title]] to create a link to another note. Links show up in the graph view!</blockquote>
+<br>Try opening [[My Second Note]] to see connections.`,
+      tags: ['welcome', 'guide'], created: Date.now()-86400000, modified: Date.now()
+    },
+    {
+      id: 'n2', folderId: 'f1', title: 'My Second Note',
+      content: `This note is linked from [[Welcome to Notiva]].<br><br>
+Write in <strong>bold</strong>, <em>italic</em>, or add <code>inline code</code>.<br><br>
+<h2>Formatting Tips</h2>
+<ul>
+<li>Use <strong>#tags</strong> in the tag bar to categorise notes</li>
+<li>Use <strong>[[links]]</strong> to connect ideas</li>
+<li>Open <strong>Graph View</strong> to explore your knowledge network</li>
+</ul>`,
+      tags: ['example'], created: Date.now()-43200000, modified: Date.now()-3600000
+    },
+    {
+      id: 'n3', folderId: 'f2', title: 'Project Ideas',
+      content: `<h2>Ideas Backlog</h2>
+<ul>
+<li>Build a web scraper</li>
+<li>Learn Rust programming</li>
+<li>Read [[Welcome to Notiva]]</li>
+<li>Explore knowledge graphs</li>
+</ul>`,
+      tags: ['projects','ideas'], created: Date.now()-7200000, modified: Date.now()-1800000
     }
-  </script>
+  ]
+};
+
+let vault = (function(){
+  try { const s=localStorage.getItem('notiva_v3'); return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_VAULT)); }
+  catch(e){ return JSON.parse(JSON.stringify(DEFAULT_VAULT)); }
+})();
+
+let saveTimer=null;
+
+function saveVault(){
+  try{ localStorage.setItem('notiva_v3',JSON.stringify(vault)); }catch(e){}
+  const dot=document.getElementById('save-dot');
+  const st=document.getElementById('save-status');
+  if(dot) dot.classList.remove('saving');
+  if(st) st.textContent='Saved';
+}
+
+function markDirty(){
+  const dot=document.getElementById('save-dot');
+  const st=document.getElementById('save-status');
+  if(dot) dot.classList.add('saving');
+  if(st) st.textContent='Saving…';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveVault,800);
+}
+
+let openTabs=[], activeTabId=null, ctxTargetId=null, currentMode='edit', panelTab='info';
+
+const uid=()=>'id_'+Math.random().toString(36).slice(2,10);
+const getNote=id=>vault.notes.find(n=>n.id===id);
+const getFolder=id=>vault.folders.find(f=>f.id===id);
+
+function showToast(msg){
+  const t=document.getElementById('toast'), m=document.getElementById('toast-msg');
+  if(!t||!m) return;
+  m.textContent=msg; t.classList.add('show');
+  clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+const closeModal=id=>{ const e=document.getElementById(id); if(e) e.classList.remove('open'); };
+
+// === theme.js ===
+/* ═══════════════════════════════════════════════
+   js/theme.js  —  Light / dark theme toggle
+   ═══════════════════════════════════════════════ */
+'use strict';
+
+(function(){
+  let theme=localStorage.getItem('notiva_theme')||'dark';
+
+  function applyTheme(t){
+    theme=t;
+    document.documentElement.setAttribute('data-theme',t);
+    localStorage.setItem('notiva_theme',t);
+    const m=document.getElementById('meta-theme-color');
+    if(m) m.setAttribute('content',t==='dark'?'#111114':'#ffffff');
+    const p=document.getElementById('theme-pill');
+    if(p) p.setAttribute('aria-checked',t==='light'?'true':'false');
+  }
+
+  applyTheme(theme);
+
+  document.addEventListener('DOMContentLoaded',function(){
+    const pill=document.getElementById('theme-pill');
+    if(!pill) return;
+    pill.addEventListener('click',function(){
+      const next=theme==='dark'?'light':'dark';
+      applyTheme(next);
+      showToast(next==='light'?'☀️ Light mode':'🌙 Dark mode');
+      if(typeof graphAnim!=='undefined' && document.getElementById('graph-view') &&
+         document.getElementById('graph-view').style.display!=='none'){
+        cancelAnimationFrame(graphAnim); setTimeout(initGraph,60);
+      }
+    });
+  });
+})();
+
+// === sidebar.js ===
+/* ═══════════════════════════════════════════════
+   js/sidebar.js  —  Sidebar: file tree, search, tags
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+// ─── RENDER SIDEBAR ───
+function renderSidebar() {
+  renderTree();
+  renderAllTags();
+}
+
+// ─── FILE TREE ───
+function renderTree() {
+  const el = document.getElementById('tab-files');
+  if (!el) return;
+
+  let html = vault.folders.map(f => {
+    const notes = vault.notes.filter(n => n.folderId === f.id);
+    return `
+      <div class="tree-section">
+        <div class="tree-folder ${f.open ? 'open' : ''}" onclick="toggleFolder('${f.id}')" role="button" tabindex="0" aria-expanded="${f.open}">
+          <span class="tree-folder-icon" aria-hidden="true">▶</span>
+          <span aria-hidden="true">${f.open ? '📂' : '📁'}</span>
+          <span style="flex:1">${escHtml(f.name)}</span>
+          <span style="font-size:10px;color:var(--text-muted)">${notes.length}</span>
+        </div>
+        ${f.open ? `<div class="tree-children">${notes.map(noteTreeItem).join('')}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  // Uncategorized
+  const uncat = vault.notes.filter(n => !vault.folders.find(f => f.id === n.folderId));
+  if (uncat.length) {
+    html += `
+      <div class="tree-section">
+        <div class="tree-folder open" role="button" tabindex="0">
+          <span class="tree-folder-icon" style="transform:rotate(90deg)" aria-hidden="true">▶</span>
+          <span aria-hidden="true">📄</span>
+          <span>Uncategorized</span>
+        </div>
+        <div class="tree-children">${uncat.map(noteTreeItem).join('')}</div>
+      </div>`;
+  }
+
+  el.innerHTML = html || '<div class="empty-state">No notes yet. Create your first note!</div>';
+}
+
+function noteTreeItem(n) {
+  return `
+    <div class="tree-item ${n.id === activeTabId ? 'active' : ''}"
+         onclick="openNote('${n.id}')"
+         oncontextmenu="showCtx(event,'${n.id}')"
+         role="button" tabindex="0"
+         aria-label="${escHtml(n.title || 'Untitled')}">
+      <div class="tree-dot" aria-hidden="true"></div>
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(n.title || 'Untitled')}</span>
+    </div>`;
+}
+
+function toggleFolder(fid) {
+  const f = getFolder(fid);
+  if (f) { f.open = !f.open; saveVault(); renderTree(); }
+}
+
+// ─── SIDEBAR TABS ───
+function switchSideTab(tab, btn) {
+  document.querySelectorAll('.sidebar-tab').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+
+  ['files', 'search', 'tags'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
+
+  if (tab === 'tags') renderAllTags();
+  if (tab === 'search') {
+    const inp = document.getElementById('side-search');
+    if (inp) setTimeout(() => inp.focus(), 50);
+  }
+}
+
+// ─── TAGS LIST ───
+function renderAllTags() {
+  const tc = {};
+  vault.notes.forEach(n => (n.tags || []).forEach(t => { tc[t] = (tc[t] || 0) + 1; }));
+  const el = document.getElementById('all-tags');
+  if (!el) return;
+  const keys = Object.keys(tc);
+  el.innerHTML = keys.length
+    ? keys.map(t =>
+        `<div class="tree-item" onclick="filterTag('${escAttr(t)}')" role="button" tabindex="0">
+          <span style="color:var(--accent)" aria-hidden="true">#</span>
+          ${escHtml(t)}
+          <span style="margin-left:auto;font-size:10px;color:var(--text-muted)">${tc[t]}</span>
+        </div>`
+      ).join('')
+    : '<div class="empty-state">No tags yet.</div>';
+}
+
+function filterTag(tag) {
+  switchSideTab('search', document.querySelectorAll('.sidebar-tab')[1]);
+  const si = document.getElementById('side-search');
+  if (si) { si.value = '#' + tag; doSearch(); }
+}
+
+// ─── SEARCH ───
+document.addEventListener('DOMContentLoaded', function () {
+  const si = document.getElementById('side-search');
+  if (si) si.addEventListener('input', doSearch);
+});
+
+function doSearch() {
+  const inp = document.getElementById('side-search');
+  const res = document.getElementById('search-results');
+  if (!inp || !res) return;
+  const q = inp.value.toLowerCase().trim();
+  if (!q) { res.innerHTML = ''; return; }
+
+  let matches;
+  if (q.startsWith('#')) {
+    const tag = q.slice(1);
+    matches = vault.notes.filter(n => (n.tags || []).some(t => t.toLowerCase().includes(tag)));
+  } else {
+    matches = vault.notes.filter(n =>
+      n.title.toLowerCase().includes(q) ||
+      (n.content || '').replace(/<[^>]+>/g, '').toLowerCase().includes(q)
+    );
+  }
+
+  if (!matches.length) {
+    res.innerHTML = '<div class="empty-state">No results found.</div>';
+    return;
+  }
+
+  res.innerHTML = matches.map(n => {
+    const excerpt = (n.content || '').replace(/<[^>]+>/g, '').slice(0, 80);
+    return `<div class="tree-item" onclick="openNote('${n.id}')" role="button" tabindex="0">
+      <div class="tree-dot"></div>
+      <div style="min-width:0">
+        <div style="font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hlText(n.title, q)}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hlText(excerpt, q)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function hlText(txt, q) {
+  if (!q || q.startsWith('#')) return escHtml(txt);
+  const escaped = escHtml(txt);
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return escaped.replace(re, '<mark>$1</mark>');
+}
+
+// Global search bar wires into sidebar search
+document.addEventListener('DOMContentLoaded', function () {
+  const gs = document.getElementById('global-search');
+  if (gs) {
+    gs.addEventListener('input', function (e) {
+      const q = e.target.value;
+      if (!q) return;
+      switchSideTab('search', document.querySelectorAll('.sidebar-tab')[1]);
+      const si = document.getElementById('side-search');
+      if (si) { si.value = q; doSearch(); }
+      // Open sidebar if collapsed
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar && sidebar.classList.contains('collapsed')) {
+        sidebar.classList.remove('collapsed');
+        document.getElementById('btn-toggle-sidebar').classList.add('active');
+      }
+    });
+  }
+});
+
+// ─── CREATE / DELETE / RENAME ───
+function openNewNoteModal() {
+  const sel = document.getElementById('new-note-folder');
+  if (sel) sel.innerHTML = vault.folders.map(f => `<option value="${f.id}">${escHtml(f.name)}</option>`).join('');
+  const inp = document.getElementById('new-note-name');
+  if (inp) inp.value = '';
+  const modal = document.getElementById('modal-new');
+  if (modal) {
+    modal.classList.add('open');
+    setTimeout(() => inp && inp.focus(), 120);
+  }
+}
+
+function createNote() {
+  const nameEl = document.getElementById('new-note-name');
+  const folderEl = document.getElementById('new-note-folder');
+  const title = (nameEl ? nameEl.value.trim() : '') || 'Untitled Note';
+  const folderId = folderEl ? folderEl.value : (vault.folders[0] ? vault.folders[0].id : null);
+  const note = { id: uid(), folderId, title, content: '', tags: [], created: Date.now(), modified: Date.now() };
+  vault.notes.push(note);
+  saveVault();
+  closeModal('modal-new');
+  renderSidebar();
+  openNote(note.id);
+  setTimeout(() => { const t = document.getElementById('note-title'); if (t) t.focus(); }, 150);
+  showToast('✦ Note created!');
+}
+
+function createFolder() {
+  const nameEl = document.getElementById('new-folder-name');
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) return;
+  vault.folders.push({ id: uid(), name, open: true });
+  saveVault();
+  closeModal('modal-folder');
+  renderSidebar();
+  showToast('📁 Folder created!');
+}
+
+// Context menu
+function showCtx(e, id) {
+  e.preventDefault();
+  ctxTargetId = id;
+  const menu = document.getElementById('ctx-menu');
+  if (!menu) return;
+  // Position carefully to avoid going off-screen
+  const x = Math.min(e.clientX, window.innerWidth - 180);
+  const y = Math.min(e.clientY, window.innerHeight - 140);
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.classList.add('open');
+}
+
+function hideCtx() {
+  const menu = document.getElementById('ctx-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+function ctxOpen() { if (ctxTargetId) openNote(ctxTargetId); hideCtx(); }
+
+function ctxRename() {
+  if (!ctxTargetId) return;
+  const n = getNote(ctxTargetId);
+  if (!n) return;
+  const inp = document.getElementById('rename-val');
+  if (inp) inp.value = n.title;
+  const modal = document.getElementById('modal-rename');
+  if (modal) {
+    modal.classList.add('open');
+    setTimeout(() => inp && inp.focus(), 120);
+  }
+  hideCtx();
+}
+
+function doRename() {
+  if (!ctxTargetId) return;
+  const n = getNote(ctxTargetId);
+  if (!n) return;
+  const inp = document.getElementById('rename-val');
+  n.title = (inp ? inp.value.trim() : '') || 'Untitled';
+  n.modified = Date.now();
+  saveVault();
+  closeModal('modal-rename');
+  renderSidebar();
+  renderTabs();
+  const titleEl = document.getElementById('note-title');
+  if (activeTabId === ctxTargetId && titleEl) titleEl.value = n.title;
+  updateBreadcrumb(n);
+  showToast('✎ Renamed!');
+}
+
+function ctxDelete() {
+  if (!ctxTargetId) return;
+  if (!confirm('Delete this note? This cannot be undone.')) { hideCtx(); return; }
+  vault.notes = vault.notes.filter(n => n.id !== ctxTargetId);
+  openTabs = openTabs.filter(t => t.id !== ctxTargetId);
+  if (activeTabId === ctxTargetId) {
+    activeTabId = openTabs.length ? openTabs[openTabs.length - 1].id : null;
+  }
+  saveVault();
+  hideCtx();
+  renderSidebar();
+  renderTabs();
+  if (activeTabId) loadNote(activeTabId);
+  else showWelcome();
+  showToast('Note deleted');
+}
+
+// ─── HELPERS ───
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escAttr(str) {
+  return String(str).replace(/'/g, "\\'");
+}
+
+// === tabs.js ===
+/* ═══════════════════════════════════════════════
+   js/tabs.js  —  Multi-tab note management
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+function renderTabs() {
+  const bar = document.getElementById('tabs-bar');
+  if (!bar) return;
+  bar.innerHTML = openTabs.map(t => {
+    const n = getNote(t.id);
+    if (!n) return '';
+    return `
+      <div class="tab ${t.id === activeTabId ? 'active' : ''}"
+           onclick="switchTab('${t.id}')"
+           role="tab"
+           aria-selected="${t.id === activeTabId}"
+           aria-label="${escHtml(n.title || 'Untitled')}">
+        <span>${escHtml((n.title || 'Untitled').slice(0, 22))}</span>
+        ${t.dirty ? '<span style="color:var(--gold);margin-left:2px" aria-hidden="true">●</span>' : ''}
+        <span class="tab-close" onclick="closeTab(event,'${t.id}')" aria-label="Close tab">✕</span>
+      </div>`;
+  }).join('');
+}
+
+function switchTab(id) {
+  saveEditorToNote();
+  activeTabId = id;
+  renderTabs();
+  loadNote(id);
+  renderTree();
+}
+
+function closeTab(e, id) {
+  e.stopPropagation();
+  openTabs = openTabs.filter(t => t.id !== id);
+  if (activeTabId === id) {
+    activeTabId = openTabs.length ? openTabs[openTabs.length - 1].id : null;
+  }
+  renderTabs();
+  if (activeTabId) loadNote(activeTabId);
+  else showWelcome();
+}
+
+// === editor.js ===
+/* ═══════════════════════════════════════════════
+   js/editor.js  —  Note editor, formatting, preview
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+// ─── OPEN / LOAD ───
+function openNote(id) {
+  saveEditorToNote();
+  if (!openTabs.find(t => t.id === id)) openTabs.push({ id, dirty: false });
+  activeTabId = id;
+  renderTabs();
+  loadNote(id);
+  renderTree();
+  hideGraph();
+
+  // On mobile: switch to editor view
+  if (window.innerWidth <= 640) mobileSwitchView('editor');
+}
+
+function loadNote(id) {
+  const n = getNote(id);
+  if (!n) return;
+
+  document.getElementById('welcome-screen').style.display = 'none';
+  document.getElementById('note-view').style.display = 'flex';
+
+  const titleEl = document.getElementById('note-title');
+  const editorEl = document.getElementById('note-editor');
+  const dateEl = document.getElementById('note-date');
+
+  if (titleEl) titleEl.value = n.title || '';
+  if (editorEl) editorEl.innerHTML = n.content || '';
+  if (dateEl) dateEl.textContent = 'Modified ' + new Date(n.modified).toLocaleDateString();
+
+  updateBreadcrumb(n);
+  renderNoteTags(n);
+  updateWC();
+  updatePreview();
+  updatePanel();
+}
+
+function showWelcome() {
+  const ws = document.getElementById('welcome-screen');
+  const nv = document.getElementById('note-view');
+  const gv = document.getElementById('graph-view');
+  if (ws) ws.style.display = '';
+  if (nv) nv.style.display = 'none';
+  if (gv) gv.style.display = 'none';
+  document.getElementById('bc-folder').textContent = '—';
+  document.getElementById('bc-note').textContent = 'No file open';
+}
+
+function updateBreadcrumb(n) {
+  const f = getFolder(n.folderId);
+  const bcFolder = document.getElementById('bc-folder');
+  const bcNote = document.getElementById('bc-note');
+  if (bcFolder) bcFolder.textContent = f ? f.name : 'notiva';
+  if (bcNote) bcNote.textContent = n.title || 'Untitled';
+}
+
+// ─── SAVE ───
+function saveEditorToNote() {
+  if (!activeTabId) return;
+  const n = getNote(activeTabId);
+  if (!n) return;
+  const editorEl = document.getElementById('note-editor');
+  const titleEl = document.getElementById('note-title');
+  if (editorEl) n.content = editorEl.innerHTML;
+  if (titleEl) n.title = titleEl.value || 'Untitled';
+  n.modified = Date.now();
+}
+
+// ─── AUTO-SAVE LISTENERS ───
+document.addEventListener('DOMContentLoaded', function () {
+  const editor = document.getElementById('note-editor');
+  const titleInput = document.getElementById('note-title');
+
+  if (editor) {
+    editor.addEventListener('input', function () {
+      if (!activeTabId) return;
+      const n = getNote(activeTabId);
+      if (n) { n.content = editor.innerHTML; n.modified = Date.now(); }
+      markDirty();
+      updateWC();
+      if (currentMode !== 'edit') updatePreview();
+      const tab = openTabs.find(t => t.id === activeTabId);
+      if (tab) { tab.dirty = true; renderTabs(); }
+    });
+  }
+
+  if (titleInput) {
+    titleInput.addEventListener('input', function () {
+      if (!activeTabId) return;
+      const n = getNote(activeTabId);
+      if (n) { n.title = titleInput.value; n.modified = Date.now(); }
+      markDirty();
+      renderTabs();
+      renderTree();
+      updateBreadcrumb(n || { title: titleInput.value });
+      const tab = openTabs.find(t => t.id === activeTabId);
+      if (tab) { tab.dirty = true; renderTabs(); }
+    });
+  }
+});
+
+// ─── WORD COUNT ───
+function updateWC() {
+  const el = document.getElementById('note-editor');
+  const wc = document.getElementById('word-count');
+  if (!el || !wc) return;
+  const txt = el.innerText || '';
+  const count = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+  wc.textContent = count + ' words';
+}
+
+// ─── FORMATTING ───
+function fmt(cmd) {
+  const ed = document.getElementById('note-editor');
+  if (ed) ed.focus();
+  document.execCommand(cmd, false, null);
+}
+
+function iBlock(type) {
+  const ed = document.getElementById('note-editor');
+  if (ed) ed.focus();
+  const sel = window.getSelection ? window.getSelection().toString() : '';
+  const text = sel || 'text';
+  switch (type) {
+    case 'h1': case 'h2': case 'h3': case 'blockquote':
+      document.execCommand('formatBlock', false, type); break;
+    case 'ul': document.execCommand('insertUnorderedList'); break;
+    case 'ol': document.execCommand('insertOrderedList'); break;
+    case 'code':
+      document.execCommand('insertHTML', false, `<code>${text}</code>`); break;
+  }
+}
+
+function insertWikiLink() {
+  const title = prompt('Link to note (enter title):');
+  if (!title) return;
+  const ed = document.getElementById('note-editor');
+  if (ed) ed.focus();
+  document.execCommand('insertHTML', false,
+    `<span class="wikilink" onclick="openByTitle('${escAttr(title)}')">[[${title}]]</span>`);
+}
+
+function insertHR() {
+  const ed = document.getElementById('note-editor');
+  if (ed) ed.focus();
+  document.execCommand('insertHTML', false, '<hr>');
+}
+
+function openByTitle(title) {
+  const note = vault.notes.find(n => n.title.toLowerCase() === title.toLowerCase());
+  if (note) openNote(note.id);
+  else showToast(`Note "${title}" not found`);
+}
+
+// ─── PREVIEW MODE ───
+function setMode(mode) {
+  currentMode = mode;
+  const ed = document.getElementById('note-editor');
+  const pre = document.getElementById('preview-pane');
+  if (!ed || !pre) return;
+
+  ['edit', 'split', 'preview'].forEach(m => {
+    const btn = document.getElementById('m-' + m);
+    if (btn) {
+      btn.classList.toggle('active', m === mode);
+      btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+    }
+  });
+
+  if (mode === 'edit') {
+    ed.style.display = '';
+    pre.style.display = 'none';
+  } else if (mode === 'split') {
+    ed.style.display = '';
+    pre.style.display = '';
+    pre.style.flex = '1';
+    pre.style.borderLeft = '1px solid var(--border)';
+    updatePreview();
+  } else { // preview
+    ed.style.display = 'none';
+    pre.style.display = '';
+    pre.style.flex = '1';
+    updatePreview();
+  }
+}
+
+function updatePreview() {
+  const ed = document.getElementById('note-editor');
+  const pre = document.getElementById('preview-pane');
+  if (!ed || !pre) return;
+  const html = ed.innerHTML.replace(/\[\[([^\]]+)\]\]/g, (_, t) =>
+    `<span class="wikilink" onclick="openByTitle('${escAttr(t)}')">[[${t}]]</span>`
+  );
+  pre.innerHTML = html;
+}
+
+// ─── TAGS ───
+function renderNoteTags(n) {
+  const el = document.getElementById('tags-display');
+  if (!el) return;
+  el.innerHTML = (n.tags || []).map(t =>
+    `<span class="note-tag" onclick="removeTag('${escAttr(t)}')" title="Click to remove" role="button">#${escHtml(t)}</span>`
+  ).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const addTagBtn = document.getElementById('btn-add-tag');
+  if (addTagBtn) {
+    addTagBtn.addEventListener('click', function () {
+      const inp = document.getElementById('new-tag-val');
+      if (inp) inp.value = '';
+      const modal = document.getElementById('modal-tag');
+      if (modal) {
+        modal.classList.add('open');
+        setTimeout(() => inp && inp.focus(), 120);
+      }
+    });
+  }
+});
+
+function addTag() {
+  if (!activeTabId) return;
+  const inp = document.getElementById('new-tag-val');
+  const tag = inp ? inp.value.trim().replace(/\s+/g, '_').toLowerCase() : '';
+  if (!tag) return;
+  const n = getNote(activeTabId);
+  if (!n) return;
+  if (!n.tags) n.tags = [];
+  if (!n.tags.includes(tag)) n.tags.push(tag);
+  saveVault();
+  renderNoteTags(n);
+  renderAllTags();
+  closeModal('modal-tag');
+  showToast('#' + tag + ' added');
+}
+
+function removeTag(tag) {
+  if (!activeTabId) return;
+  const n = getNote(activeTabId);
+  if (!n) return;
+  n.tags = (n.tags || []).filter(t => t !== tag);
+  saveVault();
+  renderNoteTags(n);
+  renderAllTags();
+}
+
+// === panel.js ===
+/* ═══════════════════════════════════════════════
+   js/panel.js  —  Right properties panel
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+function switchPanelTab(tab, btn) {
+  panelTab = tab;
+  document.querySelectorAll('.ptab').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+  updatePanel();
+}
+
+function updatePanel() {
+  const body = document.getElementById('panel-body');
+  if (!body) return;
+
+  if (!activeTabId) {
+    body.innerHTML = '<div class="empty-state">Open a note to view properties.</div>';
+    return;
+  }
+  const n = getNote(activeTabId);
+  if (!n) return;
+
+  if (panelTab === 'info') {
+    const f = getFolder(n.folderId);
+    body.innerHTML = `
+      <div class="panel-section">
+        <div class="panel-section-title">Properties</div>
+        <div style="font-size:11px;color:var(--text-secondary);line-height:2.2">
+          ${propRow('Folder', f ? f.name : '—')}
+          ${propRow('Created', new Date(n.created).toLocaleDateString())}
+          ${propRow('Modified', new Date(n.modified).toLocaleDateString())}
+          ${propRow('ID', `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-muted)">${n.id}</span>`)}
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-title">Tags</div>
+        <div class="tag-cloud">
+          ${(n.tags || []).map(t => `<span class="tag-chip" onclick="filterTag('${escAttr(t)}')">#${escHtml(t)}</span>`).join('') ||
+            '<span style="font-size:11px;color:var(--text-muted);font-style:italic">No tags yet</span>'}
+        </div>
+      </div>`;
+
+  } else if (panelTab === 'links') {
+    const wikilinks = [...(n.content || '').matchAll(/\[\[([^\]]+)\]\]/g)].map(m => m[1]);
+    const incoming = vault.notes.filter(o => o.id !== n.id && (o.content || '').includes(`[[${n.title}]]`));
+
+    body.innerHTML = `
+      <div class="panel-section">
+        <div class="panel-section-title">Outgoing Links (${wikilinks.length})</div>
+        ${wikilinks.length
+          ? wikilinks.map(w => {
+              const target = vault.notes.find(x => x.title.toLowerCase() === w.toLowerCase());
+              return `<div class="linked-note" onclick="${target ? `openNote('${target.id}')` : ''}" role="button" tabindex="0">
+                <div class="linked-dot"></div>
+                ${escHtml(w)}
+                ${!target ? '<span style="color:var(--text-muted);font-size:10px;margin-left:4px">(missing)</span>' : ''}
+              </div>`;
+            }).join('')
+          : '<div class="empty-state">No outgoing links</div>'}
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-title">Backlinks (${incoming.length})</div>
+        ${incoming.length
+          ? incoming.map(ln =>
+              `<div class="linked-note" onclick="openNote('${ln.id}')" role="button" tabindex="0">
+                <div class="linked-dot" style="background:var(--accent-2)"></div>
+                ${escHtml(ln.title)}
+              </div>`
+            ).join('')
+          : '<div class="empty-state">No backlinks yet</div>'}
+      </div>`;
+
+  } else { // stats
+    const txt = (n.content || '').replace(/<[^>]+>/g, '');
+    const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+    const chars = txt.length;
+    const links = [...(n.content || '').matchAll(/\[\[/g)].length;
+    const readTime = Math.max(1, Math.round(words / 200));
+
+    body.innerHTML = `
+      <div class="panel-section">
+        <div class="panel-section-title">Note Statistics</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val">${words}</div><div class="stat-label">Words</div></div>
+          <div class="stat-box"><div class="stat-val">${chars}</div><div class="stat-label">Chars</div></div>
+          <div class="stat-box"><div class="stat-val">${links}</div><div class="stat-label">Links</div></div>
+          <div class="stat-box"><div class="stat-val">${readTime}m</div><div class="stat-label">Read Time</div></div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-section-title">Vault Overview</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val" style="color:var(--accent-3)">${vault.notes.length}</div><div class="stat-label">Notes</div></div>
+          <div class="stat-box"><div class="stat-val" style="color:var(--accent-2)">${vault.folders.length}</div><div class="stat-label">Folders</div></div>
+        </div>
+      </div>`;
+  }
+}
+
+function propRow(label, value) {
+  return `<div style="display:flex;gap:8px;align-items:baseline">
+    <span style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:10px;min-width:64px;flex-shrink:0">${label}</span>
+    <span>${value}</span>
+  </div>`;
+}
+
+// === graph.js ===
+/* ═══════════════════════════════════════════════
+   js/graph.js  —  Interactive force-directed graph
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+let graphAnim = null;
+let graphNodes = [];
+let graphEdges = [];
+let graphDrag = null;
+let graphTouch = null; // for touch drag
+
+function showGraph() {
+  saveEditorToNote();
+  document.getElementById('welcome-screen').style.display = 'none';
+  document.getElementById('note-view').style.display = 'none';
+  document.getElementById('graph-view').style.display = 'flex';
+  document.getElementById('btn-graph').classList.add('active');
+  setTimeout(initGraph, 60);
+}
+
+function hideGraph() {
+  document.getElementById('graph-view').style.display = 'none';
+  document.getElementById('btn-graph').classList.remove('active');
+  if (graphAnim) { cancelAnimationFrame(graphAnim); graphAnim = null; }
+  if (activeTabId) document.getElementById('note-view').style.display = 'flex';
+  else document.getElementById('welcome-screen').style.display = '';
+}
+
+function initGraph() {
+  const canvas = document.getElementById('graph-canvas');
+  const container = document.getElementById('graph-container');
+  if (!canvas || !container) return;
+
+  // Set canvas pixel size
+  const dpr = window.devicePixelRatio || 1;
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = W / 2, cy = H / 2;
+
+  // Build nodes
+  graphNodes = vault.notes.map((n, i) => {
+    const angle = (i / vault.notes.length) * Math.PI * 2;
+    const r = Math.min(W, H) * 0.3;
+    return {
+      id: n.id,
+      title: n.title,
+      x: cx + r * Math.cos(angle) + (Math.random() - 0.5) * 60,
+      y: cy + r * Math.sin(angle) + (Math.random() - 0.5) * 60,
+      vx: 0, vy: 0,
+      r: n.id === activeTabId ? 11 : 7
+    };
+  });
+
+  // Build edges from wikilinks
+  graphEdges = [];
+  vault.notes.forEach(n => {
+    const links = [...(n.content || '').matchAll(/\[\[([^\]]+)\]\]/g)].map(m => m[1]);
+    links.forEach(lt => {
+      const target = vault.notes.find(x => x.title.toLowerCase() === lt.toLowerCase());
+      if (target) graphEdges.push({ from: n.id, to: target.id });
+    });
+  });
+
+  // ─── Mouse events ───
+  canvas.onmousedown = e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    graphDrag = graphNodes.find(n => Math.hypot(n.x - mx, n.y - my) < n.r + 6) || null;
+  };
+  canvas.onmousemove = e => {
+    if (!graphDrag) return;
+    const rect = canvas.getBoundingClientRect();
+    graphDrag.x = e.clientX - rect.left;
+    graphDrag.y = e.clientY - rect.top;
+    graphDrag.vx = 0; graphDrag.vy = 0;
+  };
+  canvas.onmouseup = e => {
+    if (graphDrag) {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      if (Math.hypot(graphDrag.x - mx, graphDrag.y - my) < 4) openNote(graphDrag.id);
+      graphDrag = null;
+    }
+  };
+  canvas.onmouseleave = () => { graphDrag = null; };
+
+  // ─── Touch events ───
+  canvas.ontouchstart = e => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const mx = touch.clientX - rect.left, my = touch.clientY - rect.top;
+    graphTouch = { startX: mx, startY: my, time: Date.now() };
+    graphDrag = graphNodes.find(n => Math.hypot(n.x - mx, n.y - my) < n.r + 10) || null;
+  };
+  canvas.ontouchmove = e => {
+    e.preventDefault();
+    if (!graphDrag) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    graphDrag.x = touch.clientX - rect.left;
+    graphDrag.y = touch.clientY - rect.top;
+    graphDrag.vx = 0; graphDrag.vy = 0;
+  };
+  canvas.ontouchend = e => {
+    e.preventDefault();
+    if (graphDrag && graphTouch) {
+      const elapsed = Date.now() - graphTouch.time;
+      const touch = e.changedTouches[0];
+      const rect = canvas.getBoundingClientRect();
+      const mx = touch.clientX - rect.left, my = touch.clientY - rect.top;
+      const moved = Math.hypot(graphDrag.x - mx, graphDrag.y - my);
+      // Tap (not drag): open note
+      if (moved < 8 && elapsed < 400) openNote(graphDrag.id);
+    }
+    graphDrag = null;
+    graphTouch = null;
+  };
+
+  if (graphAnim) cancelAnimationFrame(graphAnim);
+
+  function tick() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    // Physics
+    graphNodes.forEach(a => {
+      graphNodes.forEach(b => {
+        if (a === b) return;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d = Math.max(1, Math.hypot(dx, dy));
+        const f = 2400 / (d * d);
+        a.vx += (dx / d) * f;
+        a.vy += (dy / d) * f;
+      });
+      a.vx += (cx - a.x) * 0.003;
+      a.vy += (cy - a.y) * 0.003;
+    });
+
+    graphEdges.forEach(edge => {
+      const a = graphNodes.find(n => n.id === edge.from);
+      const b = graphNodes.find(n => n.id === edge.to);
+      if (!a || !b) return;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.max(1, Math.hypot(dx, dy));
+      const f = (d - 120) * 0.03;
+      a.vx += (dx / d) * f; a.vy += (dy / d) * f;
+      b.vx -= (dx / d) * f; b.vy -= (dy / d) * f;
+    });
+
+    graphNodes.forEach(n => {
+      if (n === graphDrag) return;
+      n.vx *= 0.84; n.vy *= 0.84;
+      n.x += n.vx; n.y += n.vy;
+      // Clamp to canvas
+      n.x = Math.max(n.r + 2, Math.min(W - n.r - 2, n.x));
+      n.y = Math.max(n.r + 2, Math.min(H - n.r - 2, n.y));
+    });
+
+    // Draw
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid dots
+    ctx.fillStyle = dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
+    for (let gx = 0; gx < W; gx += 40) {
+      for (let gy = 0; gy < H; gy += 40) {
+        ctx.beginPath(); ctx.arc(gx, gy, 1.2, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // Edges
+    graphEdges.forEach(edge => {
+      const a = graphNodes.find(n => n.id === edge.from);
+      const b = graphNodes.find(n => n.id === edge.to);
+      if (!a || !b) return;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = dark ? 'rgba(157,122,255,0.2)' : 'rgba(107,79,216,0.18)';
+      ctx.lineWidth = 1; ctx.stroke();
+    });
+
+    // Nodes
+    graphNodes.forEach(n => {
+      // Glow for active node
+      if (n.id === activeTabId) {
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 10, 0, Math.PI * 2);
+        const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r + 10);
+        grd.addColorStop(0, 'rgba(157,122,255,0.35)');
+        grd.addColorStop(1, 'rgba(157,122,255,0)');
+        ctx.fillStyle = grd; ctx.fill();
+      }
+
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = n.id === activeTabId ? '#9d7aff' : (dark ? '#2e2e48' : '#d0cce8');
+      ctx.strokeStyle = n.id === activeTabId ? '#c4a6ff' : (dark ? '#5a5670' : '#a8a0c8');
+      ctx.lineWidth = 1.5; ctx.fill(); ctx.stroke();
+
+      // Label
+      const label = n.title.slice(0, 20) + (n.title.length > 20 ? '…' : '');
+      ctx.fillStyle = n.id === activeTabId
+        ? (dark ? '#e8e6f0' : '#1a1825')
+        : (dark ? '#9490a8' : '#4e4868');
+      ctx.font = (n.id === activeTabId ? '600 ' : '') + '11px Syne, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, n.x, n.y + n.r + 14);
+    });
+
+    graphAnim = requestAnimationFrame(tick);
+  }
+
+  tick();
+}
+
+// === mobile.js ===
+/* ═══════════════════════════════════════════════
+   js/mobile.js  —  Mobile UX: nav, drawers, touch
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+let mobileView = 'notes'; // 'notes' | 'editor' | 'graph' | 'info'
+
+function isMobile() {
+  return window.innerWidth <= 640;
+}
+
+// ─── BOTTOM NAV VIEW SWITCHER ───
+function mobileSwitchView(view) {
+  if (!isMobile()) return;
+  mobileView = view;
+
+  // Update nav button states
+  ['notes', 'editor', 'graph', 'info'].forEach(v => {
+    const btn = document.getElementById('mbn-' + v);
+    if (btn) btn.classList.toggle('active', v === view);
+  });
+
+  // Close sidebar overlay when switching away from notes
+  if (view !== 'notes') closeMobileSidebar();
+
+  switch (view) {
+    case 'notes':
+      openMobileSidebar();
+      break;
+
+    case 'editor':
+      closeMobileSidebar();
+      closeMobilePanel();
+      hideGraph();
+      if (activeTabId) {
+        document.getElementById('note-view').style.display = 'flex';
+        document.getElementById('welcome-screen').style.display = 'none';
+      } else {
+        document.getElementById('welcome-screen').style.display = '';
+        document.getElementById('note-view').style.display = 'none';
+      }
+      break;
+
+    case 'graph':
+      closeMobileSidebar();
+      closeMobilePanel();
+      showGraph();
+      break;
+
+    case 'info':
+      closeMobileSidebar();
+      openMobilePanel();
+      break;
+  }
+}
+
+// ─── SIDEBAR DRAWER ───
+function openMobileSidebar() {
+  if (!isMobile()) return;
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.add('mobile-open');
+  if (overlay) {
+    overlay.classList.add('visible');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('mobile-open');
+  if (overlay) {
+    overlay.classList.remove('visible');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+}
+
+// ─── RIGHT PANEL BOTTOM SHEET ───
+function openMobilePanel() {
+  if (!isMobile()) return;
+  const panel = document.getElementById('right-panel');
+  if (panel) panel.classList.add('mobile-open');
+  updatePanel();
+}
+
+function closeMobilePanel() {
+  const panel = document.getElementById('right-panel');
+  if (panel) panel.classList.remove('mobile-open');
+}
+
+// ─── MOBILE SEARCH BAR ───
+document.addEventListener('DOMContentLoaded', function () {
+  const btnSearch = document.getElementById('btn-mobile-search');
+  const searchBar = document.getElementById('mobile-search-bar');
+  const closeSearch = document.getElementById('btn-close-mobile-search');
+  const mobileInput = document.getElementById('mobile-search-input');
+
+  if (btnSearch) {
+    btnSearch.addEventListener('click', function () {
+      if (!searchBar) return;
+      searchBar.classList.add('open');
+      searchBar.setAttribute('aria-hidden', 'false');
+      if (mobileInput) setTimeout(() => mobileInput.focus(), 100);
+    });
+  }
+
+  if (closeSearch) {
+    closeSearch.addEventListener('click', function () {
+      if (searchBar) {
+        searchBar.classList.remove('open');
+        searchBar.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  if (mobileInput) {
+    mobileInput.addEventListener('input', function () {
+      const q = mobileInput.value;
+      // Mirror to sidebar search
+      const sideSearch = document.getElementById('side-search');
+      const gs = document.getElementById('global-search');
+      if (sideSearch) { sideSearch.value = q; doSearch(); }
+      if (gs) gs.value = q;
+      // Open sidebar search tab
+      if (q) switchSideTab('search', document.querySelectorAll('.sidebar-tab')[1]);
+    });
+
+    mobileInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        if (searchBar) {
+          searchBar.classList.remove('open');
+          searchBar.setAttribute('aria-hidden', 'true');
+        }
+      }
+    });
+  }
+
+  // Overlay closes sidebar on mobile
+  const overlay = document.getElementById('sidebar-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', closeMobileSidebar);
+  }
+
+  // Panel close on swipe down (touch)
+  const panel = document.getElementById('right-panel');
+  if (panel) {
+    let touchStartY = 0;
+    panel.addEventListener('touchstart', function (e) {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    panel.addEventListener('touchmove', function (e) {
+      const dy = e.touches[0].clientY - touchStartY;
+      if (dy > 60) closeMobilePanel();
+    }, { passive: true });
+  }
+
+  // Sidebar toggle on desktop (existing button)
+  const btnSidebar = document.getElementById('btn-toggle-sidebar');
+  if (btnSidebar) {
+    btnSidebar.addEventListener('click', function () {
+      if (isMobile()) {
+        // Toggle mobile drawer
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('mobile-open')) {
+          closeMobileSidebar();
+        } else {
+          openMobileSidebar();
+        }
+      } else {
+        // Desktop collapse
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.toggle('collapsed');
+        btnSidebar.classList.toggle('active', !sidebar.classList.contains('collapsed'));
+      }
+    });
+  }
+
+  // Right panel toggle
+  const btnPanel = document.getElementById('btn-toggle-panel');
+  if (btnPanel) {
+    btnPanel.addEventListener('click', function () {
+      if (isMobile()) {
+        const panel = document.getElementById('right-panel');
+        if (panel && panel.classList.contains('mobile-open')) {
+          closeMobilePanel();
+        } else {
+          openMobilePanel();
+          mobileView = 'info';
+          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+          const infoBtn = document.getElementById('mbn-info');
+          if (infoBtn) infoBtn.classList.add('active');
+        }
+      } else {
+        const panel = document.getElementById('right-panel');
+        if (panel) panel.classList.toggle('collapsed');
+        btnPanel.classList.toggle('active');
+      }
+    });
+  }
+
+  // Graph toggle button
+  const btnGraph = document.getElementById('btn-graph');
+  if (btnGraph) {
+    btnGraph.addEventListener('click', function () {
+      const gv = document.getElementById('graph-view');
+      if (gv && gv.style.display !== 'none') {
+        hideGraph();
+        if (isMobile()) {
+          mobileView = 'editor';
+          mobileSwitchView('editor');
+        }
+      } else {
+        showGraph();
+        if (isMobile()) {
+          mobileView = 'graph';
+          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+          const graphBtn = document.getElementById('mbn-graph');
+          if (graphBtn) graphBtn.classList.add('active');
+        }
+      }
+    });
+  }
+
+  // Handle resize: clean up mobile state when going back to desktop
+  window.addEventListener('resize', function () {
+    if (!isMobile()) {
+      closeMobileSidebar();
+      closeMobilePanel();
+      // Restore sidebar default
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) {
+        sidebar.classList.remove('mobile-open');
+        if (!sidebar.classList.contains('collapsed')) {
+          sidebar.style.transform = '';
+        }
+      }
+    }
+  });
+
+  // Welcome "Create First Note" button
+  const wBtn = document.getElementById('welcome-new-btn');
+  if (wBtn) wBtn.addEventListener('click', openNewNoteModal);
+});
+
+// === app.js ===
+/* ═══════════════════════════════════════════════
+   js/app.js  —  App init, keyboard shortcuts, glue
+   ═══════════════════════════════════════════════ */
+
+'use strict';
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ─── MODAL DISMISS ───
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function (e) {
+      if (e.target === m) m.classList.remove('open');
+    });
+  });
+
+  // ─── MODAL ENTER KEY ───
+  const enterPairs = [
+    ['new-note-name', createNote],
+    ['new-folder-name', createFolder],
+    ['new-tag-val', addTag],
+    ['rename-val', doRename]
+  ];
+  enterPairs.forEach(([id, fn]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') fn(); });
+  });
+
+  // ─── NEW NOTE / FOLDER BUTTONS ───
+  const btnNewNote = document.getElementById('btn-new-note');
+  if (btnNewNote) btnNewNote.addEventListener('click', openNewNoteModal);
+
+  const btnNewFolder = document.getElementById('btn-new-folder');
+  if (btnNewFolder) {
+    btnNewFolder.addEventListener('click', function () {
+      const inp = document.getElementById('new-folder-name');
+      if (inp) inp.value = '';
+      const modal = document.getElementById('modal-folder');
+      if (modal) {
+        modal.classList.add('open');
+        setTimeout(() => inp && inp.focus(), 120);
+      }
+    });
+  }
+
+  // ─── CONTEXT MENU DISMISS ───
+  document.addEventListener('click', hideCtx);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      hideCtx();
+      // Close any open modal
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+      // Close mobile sidebar
+      closeMobileSidebar();
+      closeMobilePanel();
+    }
+  });
+
+  // ─── KEYBOARD SHORTCUTS ───
+  document.addEventListener('keydown', function (e) {
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (!ctrl) return;
+
+    switch (e.key.toLowerCase()) {
+      case 'n':
+        e.preventDefault();
+        openNewNoteModal();
+        break;
+
+      case 'k':
+        e.preventDefault();
+        const gs = document.getElementById('global-search');
+        if (gs) gs.focus();
+        break;
+
+      case 'e':
+        e.preventDefault();
+        const modes = ['edit', 'split', 'preview'];
+        const next = modes[(modes.indexOf(currentMode) + 1) % modes.length];
+        setMode(next);
+        break;
+
+      case 'g':
+        e.preventDefault();
+        const gv = document.getElementById('graph-view');
+        if (gv && gv.style.display !== 'none') hideGraph();
+        else showGraph();
+        break;
+
+      case 's':
+        e.preventDefault();
+        saveEditorToNote();
+        saveVault();
+        showToast('✦ Saved!');
+        break;
+
+      case '\\':
+        e.preventDefault();
+        if (!isMobile()) {
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar) sidebar.classList.toggle('collapsed');
+          const btn = document.getElementById('btn-toggle-sidebar');
+          if (btn) btn.classList.toggle('active', !sidebar.classList.contains('collapsed'));
+        }
+        break;
+    }
+  });
+
+  // ─── KEYBOARD ACCESSIBILITY: tree items ───
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.classList.contains('tree-item')) {
+      e.target.click();
+    }
+    if (e.key === 'Enter' && e.target.classList.contains('tree-folder')) {
+      e.target.click();
+    }
+  });
+
+  // ─── INIT ───
+  renderSidebar();
+  updatePanel();
+
+  // Open first note on load
+  if (vault.notes.length > 0) {
+    openNote(vault.notes[0].id);
+  }
+
+  // On mobile, start on notes list view
+  if (isMobile()) {
+    mobileSwitchView('notes');
+  }
+
+  console.info('Notiva loaded. %d notes, %d folders.', vault.notes.length, vault.folders.length);
+});
+</script>
 </body>
 </html>
