@@ -12,7 +12,7 @@
 1. Push this repo to GitHub
 2. Go to **Settings → Pages → Source → GitHub Actions**
 3. Push to `main` — auto-deploys via `.github/workflows/deploy.yml`
-4. Live at `https://YOUR_USERNAME.github.io/notiva/`
+4. Live at `https://rdrahul123.github.io/Notiva-Notes/`
 
 ## 📁 Project Structure
 
