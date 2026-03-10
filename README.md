@@ -2,9 +2,9 @@
 
 > A beautiful, offline-first, graph-based note-taking app. No server. No account. No tracking.
 
-![Notiva Screenshot](https://raw.githubusercontent.com/yourusername/notiva/main/assets/preview.png)
+<img width="881" height="395" alt="n123" src="https://github.com/user-attachments/assets/fb1d1574-0923-4325-a047-aee33a68fedf" />
 
-**Live Demo →** `https://yourusername.github.io/notiva`
+**Live Demo →** `https://rdrahul123.github.io/Notiva-Notes/`
 
 ---
 
