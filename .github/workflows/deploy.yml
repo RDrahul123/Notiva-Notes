@@ -1,9 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy Notiva to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -31,7 +30,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository (static site - no build step needed)
           path: '.'
 
       - name: Deploy to GitHub Pages

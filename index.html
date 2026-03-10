@@ -6,6 +6,9 @@
 <meta name="description" content="Notiva — Your graph-based second brain. Offline-first note-taking.">
 <meta name="theme-color" content="#111114" id="meta-theme-color">
 <title>Notiva — Your Second Brain</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236b4fd8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-size='20' fill='white'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -1167,6 +1170,322 @@ mark {
 /* right panel open state (desktop) */
 .right-panel { transition: width 0.22s ease !important; }
 
+
+/* ── SPLIT DIRECTION TOGGLE ── */
+.split-dir-btn {
+  padding: 4px 8px; border-radius: 5px; border: none;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  color: var(--text-muted); font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+  letter-spacing: 0.3px; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.split-dir-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--accent-dim); }
+
+/* Split vertical (side by side) — default */
+.editor-split-wrapper.split-vertical { flex-direction: row; }
+/* Split horizontal (top / bottom) */
+.editor-split-wrapper.split-horizontal { flex-direction: column; }
+.editor-split-wrapper.split-horizontal .note-editor { flex: 1; border-bottom: 1px solid var(--border); border-right: none; }
+.editor-split-wrapper.split-horizontal .preview-area { border-left: none !important; border-top: 1px solid var(--border); }
+
+/* ── VAULT SCREEN STYLES ── */
+.vault-screen {
+  position: fixed; inset: 0;
+  background: var(--bg-primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  z-index: 9000;
+  padding: 24px;
+  overflow-y: auto;
+}
+.vault-screen.hidden { display: none; }
+
+.vault-hero {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  margin-bottom: 28px;
+}
+.vault-hero-gem {
+  width: 80px; height: 80px;
+  background: var(--accent-glow);
+  border: 2px solid var(--accent-dim);
+  border-radius: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 0 60px var(--accent-glow), 0 0 120px var(--accent-glow);
+  animation: gemPulse 3s ease-in-out infinite;
+}
+@keyframes gemPulse {
+  0%,100% { box-shadow: 0 0 60px var(--accent-glow), 0 0 120px var(--accent-glow); }
+  50% { box-shadow: 0 0 80px var(--accent-glow), 0 0 160px var(--accent-glow); }
+}
+.vault-hero-title {
+  font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800;
+  color: var(--text-primary); letter-spacing: -1px;
+}
+.vault-hero-title span { color: var(--accent); }
+.vault-hero-sub {
+  font-family: 'Literata', serif; font-size: 14px;
+  color: var(--text-muted); font-style: italic;
+}
+
+.vault-container {
+  width: 100%; max-width: 480px;
+}
+
+.vault-section-title {
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 8px; padding: 0 2px;
+}
+
+.vault-list {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 16px;
+}
+
+.vault-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.vault-card:hover {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.vault-card:active { transform: scale(0.98); }
+
+.vault-card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--accent-glow);
+  border: 1px solid var(--accent-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.vault-card-info { flex: 1; min-width: 0; }
+.vault-card-name {
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vault-card-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-muted); margin-top: 2px;
+}
+.vault-card-lock {
+  font-size: 14px; flex-shrink: 0; opacity: 0.6;
+}
+.vault-card-arrow {
+  color: var(--text-muted); font-size: 16px; flex-shrink: 0;
+}
+
+.vault-create-btn {
+  width: 100%; padding: 14px 16px;
+  background: var(--accent-glow);
+  border: 1px dashed var(--accent-dim);
+  border-radius: 12px;
+  color: var(--accent);
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.vault-create-btn:hover { background: var(--accent-dim); color: #fff; border-color: var(--accent-dim); border-style: solid; }
+
+/* Vault unlock screen */
+.vault-unlock {
+  width: 100%; max-width: 380px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 24px 80px var(--shadow-lg);
+  animation: mIn 0.22s ease;
+}
+.vault-unlock-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: var(--accent-glow); border: 1.5px solid var(--accent-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; align-self: center;
+}
+.vault-unlock-name {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800;
+  color: var(--text-primary); text-align: center; letter-spacing: -0.3px;
+}
+.vault-unlock-hint {
+  font-family: 'Literata', serif; font-size: 12px;
+  color: var(--text-muted); text-align: center; font-style: italic;
+}
+.vault-pw-input {
+  width: 100%; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 13px 16px; color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace; font-size: 16px;
+  outline: none; letter-spacing: 2px; text-align: center;
+  -webkit-appearance: none;
+}
+.vault-pw-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 2px var(--accent-glow); }
+.vault-pw-input.error {
+  border-color: var(--accent-2); box-shadow: 0 0 0 2px rgba(255,122,184,0.15);
+  animation: shake 0.35s ease;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.vault-unlock-btns { display: flex; gap: 8px; }
+.vault-back-btn {
+  padding: 11px 16px; border-radius: 9px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.vault-back-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.vault-open-btn {
+  flex: 1; padding: 11px 16px; border-radius: 9px;
+  background: var(--accent-dim); border: none;
+  color: #fff; font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.vault-open-btn:hover { background: var(--accent); }
+
+/* Vault create form */
+.vault-create-form {
+  width: 100%; max-width: 400px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 24px 80px var(--shadow-lg);
+  animation: mIn 0.22s ease;
+}
+.vault-create-form-title {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800;
+  color: var(--text-primary); margin-bottom: 4px;
+}
+.vault-form-label {
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: -6px;
+}
+.vault-form-input {
+  width: 100%; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 9px;
+  padding: 12px 14px; color: var(--text-primary);
+  font-family: 'Literata', serif; font-size: 15px;
+  outline: none; -webkit-appearance: none;
+}
+.vault-form-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 2px var(--accent-glow); }
+.vault-pw-toggle {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  font-family: 'Syne', sans-serif; font-size: 12px; color: var(--text-secondary);
+  padding: 4px 0;
+}
+.vault-pw-toggle input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+.vault-emoji-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.vault-emoji-opt {
+  width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--bg-tertiary); cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.vault-emoji-opt.selected { border-color: var(--accent-dim); background: var(--accent-glow); }
+.vault-hint {
+  font-family: 'Literata', serif; font-size: 11px; color: var(--text-muted);
+  font-style: italic; line-height: 1.5;
+}
+.vault-topbar-info {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Syne', sans-serif; font-size: 11px;
+  color: var(--text-secondary); flex-shrink: 0;
+}
+.vault-badge {
+  padding: 2px 7px; border-radius: 5px;
+  background: var(--accent-glow); border: 1px solid var(--accent-dim);
+  color: var(--accent); font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600;
+}
+.vault-switch-btn {
+  padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted);
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.vault-switch-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+
+/* ── GRAPH SIDE PANEL ── */
+.graph-panel {
+  width: 320px;
+  min-width: 220px;
+  max-width: 480px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  transition: width 0.22s ease;
+  position: relative;
+}
+.graph-panel.hidden { display: none !important; }
+
+.graph-panel-header {
+  height: 36px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+.graph-panel-title {
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase;
+  flex: 1;
+}
+.graph-panel-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-muted);
+}
+.graph-panel-close {
+  width: 24px; height: 24px; border-radius: 5px; border: none;
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.graph-panel-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Resize handle between graph panel and editor */
+.graph-resize-handle {
+  position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+  cursor: col-resize; z-index: 10;
+  background: transparent;
+}
+.graph-resize-handle:hover,
+.graph-resize-handle.dragging { background: var(--accent-dim); }
+
+/* On mobile graph takes full editor-container width */
+@media (max-width: 640px) {
+  .graph-panel {
+    position: absolute; inset: 0; width: 100% !important;
+    z-index: 10;
+  }
+  .graph-panel.hidden { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -1178,6 +1497,10 @@ mark {
     <span class="logo-text">Notiva</span>
   </div>
   <div class="topbar-sep"></div>
+  <div class="vault-topbar-info" id="vault-topbar-info-bar" style="display:none">
+    <span class="vault-badge" id="vault-topbar-badge-bar">Default</span>
+    <button class="vault-switch-btn" onclick="switchVault()">⇄ Switch</button>
+  </div>
   <button class="topbar-btn active" id="btn-toggle-sidebar" title="Toggle Sidebar (Ctrl+\\)">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="8" y1="4" x2="13" y2="4" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="10" x2="11" y2="10" stroke="currentColor" stroke-width="1.3"/></svg>
   </button>
@@ -1251,6 +1574,7 @@ mark {
   <main class="editor-area">
     <div class="tabs-bar" id="tabs-bar"></div>
     <div class="editor-wrapper">
+
       <div class="editor-container" id="editor-container">
 
         <!-- Welcome -->
@@ -1300,6 +1624,10 @@ mark {
               <button class="tb-btn" onclick="insertHR()">—</button>
             </div>
             <span class="word-count" id="word-count">0 words</span>
+            <button class="split-dir-btn" id="split-dir-btn" onclick="toggleSplitDir()" title="Toggle split direction" style="display:none">
+              <svg id="split-dir-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="5" height="11" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="7" y="1" width="5" height="11" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+              <span id="split-dir-label">Side</span>
+            </button>
             <div class="mode-toggle">
               <button class="mode-btn active" id="m-edit" onclick="setMode('edit')">Edit</button>
               <button class="mode-btn" id="m-split" onclick="setMode('split')">Split</button>
@@ -1312,19 +1640,20 @@ mark {
           </div>
         </div>
 
-        <!-- Graph View -->
-        <div id="graph-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
-          <div class="graph-header">
-            <span class="graph-title">Graph View</span>
-            <span class="graph-sub">connections via [[wikilinks]]</span>
-            <button class="tb-btn" style="margin-left:auto" onclick="hideGraph()">✕ Close</button>
-          </div>
-          <div class="graph-container" id="graph-container">
-            <canvas id="graph-canvas"></canvas>
-          </div>
-        </div>
-
       </div><!-- /editor-container -->
+
+      <!-- GRAPH PANEL (right side, alongside note) -->
+      <div class="graph-panel hidden" id="graph-panel">
+        <div class="graph-panel-header">
+          <span class="graph-panel-title">✦ Graph</span>
+          <span class="graph-panel-sub" id="graph-panel-sub">all connections</span>
+          <button class="graph-panel-close" onclick="hideGraph()" title="Close graph">✕</button>
+        </div>
+        <div class="graph-container" id="graph-container" style="flex:1;overflow:hidden;position:relative">
+          <canvas id="graph-canvas"></canvas>
+        </div>
+        <div class="graph-resize-handle" id="graph-resize-handle"></div>
+      </div>
 
       <!-- Right Panel -->
       <aside class="right-panel collapsed" id="right-panel">
@@ -1423,6 +1752,93 @@ mark {
 <div class="toast" id="toast">
   <div class="toast-dot"></div>
   <span id="toast-msg">Saved!</span>
+</div>
+
+
+<!-- VAULT SCREEN -->
+<div class="vault-screen" id="vault-screen">
+  <div class="vault-hero">
+    <div class="vault-hero-gem">✦</div>
+    <div class="vault-hero-title">Noti<span>va</span></div>
+    <div class="vault-hero-sub">Your personal knowledge vaults</div>
+  </div>
+
+  <!-- Vault list view -->
+  <div class="vault-container" id="vault-list-view">
+    <div class="vault-section-title">Your Vaults</div>
+    <div class="vault-list" id="vault-list-cards"></div>
+    <button class="vault-create-btn" onclick="showVaultCreateForm()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="4.5" x2="8" y2="11.5" stroke="currentColor" stroke-width="2"/><line x1="4.5" y1="8" x2="11.5" y2="8" stroke="currentColor" stroke-width="2"/></svg>
+      Create New Vault
+    </button>
+  </div>
+
+  <!-- Unlock view -->
+  <div id="vault-unlock-view" style="display:none;width:100%;max-width:380px">
+    <div class="vault-unlock">
+      <div class="vault-unlock-icon" id="unlock-icon">🔒</div>
+      <div class="vault-unlock-name" id="unlock-name">Vault</div>
+      <div class="vault-unlock-hint" id="unlock-hint">Enter your password to unlock</div>
+      <input type="password" class="vault-pw-input" id="unlock-pw" placeholder="••••••••" autocomplete="current-password">
+      <div style="font-size:11px;color:var(--accent-2);text-align:center;min-height:16px" id="unlock-error"></div>
+      <div class="vault-unlock-btns">
+        <button class="vault-back-btn" onclick="showVaultList()">← Back</button>
+        <button class="vault-open-btn" onclick="attemptUnlock()">Unlock Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create vault form -->
+  <div id="vault-create-view" style="display:none;width:100%;max-width:400px">
+    <div class="vault-create-form">
+      <div class="vault-create-form-title">✦ New Vault</div>
+      <div class="vault-form-label">Vault Name</div>
+      <input type="text" class="vault-form-input" id="new-vault-name" placeholder="My Vault" autocomplete="off" maxlength="32">
+      <div class="vault-form-label">Icon</div>
+      <div class="vault-emoji-row" id="vault-emoji-row">
+        <div class="vault-emoji-opt selected" data-emoji="✦" onclick="selectVaultEmoji(this)">✦</div>
+        <div class="vault-emoji-opt" data-emoji="📚" onclick="selectVaultEmoji(this)">📚</div>
+        <div class="vault-emoji-opt" data-emoji="💡" onclick="selectVaultEmoji(this)">💡</div>
+        <div class="vault-emoji-opt" data-emoji="🔬" onclick="selectVaultEmoji(this)">🔬</div>
+        <div class="vault-emoji-opt" data-emoji="🎨" onclick="selectVaultEmoji(this)">🎨</div>
+        <div class="vault-emoji-opt" data-emoji="🚀" onclick="selectVaultEmoji(this)">🚀</div>
+        <div class="vault-emoji-opt" data-emoji="💼" onclick="selectVaultEmoji(this)">💼</div>
+        <div class="vault-emoji-opt" data-emoji="🌿" onclick="selectVaultEmoji(this)">🌿</div>
+        <div class="vault-emoji-opt" data-emoji="⚙️" onclick="selectVaultEmoji(this)">⚙️</div>
+        <div class="vault-emoji-opt" data-emoji="🎯" onclick="selectVaultEmoji(this)">🎯</div>
+      </div>
+      <label class="vault-pw-toggle">
+        <input type="checkbox" id="vault-has-password" onchange="toggleVaultPwField()">
+        Lock vault with a password
+      </label>
+      <div id="vault-pw-fields" style="display:none;display:flex;flex-direction:column;gap:8px">
+        <div class="vault-form-label">Password</div>
+        <input type="password" class="vault-form-input" id="new-vault-pw" placeholder="Enter password" autocomplete="new-password">
+        <div class="vault-form-label">Confirm Password</div>
+        <input type="password" class="vault-form-input" id="new-vault-pw2" placeholder="Confirm password" autocomplete="new-password">
+      </div>
+      <div class="vault-hint">Notes are stored in your browser. Password protection uses a secure hash — if you forget it, the vault cannot be recovered.</div>
+      <div style="font-size:11px;color:var(--accent-2);min-height:16px" id="create-vault-error"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="vault-back-btn" onclick="showVaultList()">← Back</button>
+        <button class="vault-open-btn" style="flex:1" onclick="createVault()">Create Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme toggle on vault screen -->
+  <div style="position:fixed;top:16px;right:16px">
+    <button class="theme-pill" id="vault-theme-pill" title="Toggle theme" role="switch" aria-checked="false">
+      <div class="theme-pill-bg"><span>🌙</span><span>☀️</span></div>
+      <div class="theme-pill-thumb"></div>
+    </button>
+  </div>
+</div>
+
+<!-- Vault topbar badge (shown when inside a vault) -->
+<div class="vault-topbar-info" id="vault-topbar-info" style="display:none">
+  <span class="vault-badge" id="vault-topbar-badge">Default</span>
+  <button class="vault-switch-btn" onclick="switchVault()">⇄ Switch</button>
 </div>
 
 <script>
@@ -2066,10 +2482,14 @@ function openByTitle(title) {
 }
 
 // ─── PREVIEW MODE ───
+let splitDir = localStorage.getItem('notiva_splitdir') || 'vertical'; // 'vertical' | 'horizontal'
+
 function setMode(mode) {
   currentMode = mode;
   const ed = document.getElementById('note-editor');
   const pre = document.getElementById('preview-pane');
+  const wrapper = document.querySelector('.editor-split-wrapper');
+  const dirBtn = document.getElementById('split-dir-btn');
   if (!ed || !pre) return;
 
   ['edit', 'split', 'preview'].forEach(m => {
@@ -2083,18 +2503,62 @@ function setMode(mode) {
   if (mode === 'edit') {
     ed.style.display = '';
     pre.style.display = 'none';
+    if (dirBtn) dirBtn.style.display = 'none';
+    if (wrapper) { wrapper.classList.remove('split-vertical','split-horizontal'); }
   } else if (mode === 'split') {
     ed.style.display = '';
     pre.style.display = '';
     pre.style.flex = '1';
-    pre.style.borderLeft = '1px solid var(--border)';
+    if (dirBtn) dirBtn.style.display = 'flex';
+    applySplitDir(wrapper, pre);
     updatePreview();
   } else { // preview
     ed.style.display = 'none';
     pre.style.display = '';
     pre.style.flex = '1';
+    pre.style.borderLeft = 'none';
+    if (dirBtn) dirBtn.style.display = 'none';
+    if (wrapper) { wrapper.classList.remove('split-vertical','split-horizontal'); }
     updatePreview();
   }
+}
+
+function applySplitDir(wrapper, pre) {
+  if (!wrapper || !pre) return;
+  wrapper.classList.remove('split-vertical','split-horizontal');
+  if (splitDir === 'horizontal') {
+    wrapper.classList.add('split-horizontal');
+    pre.style.borderLeft = 'none';
+  } else {
+    wrapper.classList.add('split-vertical');
+    pre.style.borderLeft = '1px solid var(--border)';
+  }
+  updateSplitDirBtn();
+}
+
+function updateSplitDirBtn() {
+  const btn = document.getElementById('split-dir-btn');
+  const lbl = document.getElementById('split-dir-label');
+  const icon = document.getElementById('split-dir-icon');
+  if (!btn || !lbl || !icon) return;
+  if (splitDir === 'horizontal') {
+    lbl.textContent = 'Top/Bot';
+    // top/bottom split icon
+    icon.innerHTML = '<rect x="1" y="1" width="11" height="5" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="1" y="7" width="11" height="5" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>';
+  } else {
+    lbl.textContent = 'Side';
+    // side by side icon
+    icon.innerHTML = '<rect x="1" y="1" width="5" height="11" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="7" y="1" width="5" height="11" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>';
+  }
+}
+
+function toggleSplitDir() {
+  splitDir = splitDir === 'vertical' ? 'horizontal' : 'vertical';
+  localStorage.setItem('notiva_splitdir', splitDir);
+  const wrapper = document.querySelector('.editor-split-wrapper');
+  const pre = document.getElementById('preview-pane');
+  applySplitDir(wrapper, pre);
+  showToast(splitDir === 'horizontal' ? '⬆⬇ Top/Bottom split' : '⬅➡ Side-by-side split');
 }
 
 function updatePreview() {
@@ -2285,19 +2749,38 @@ let graphTouch = null; // for touch drag
 
 function showGraph() {
   saveEditorToNote();
-  document.getElementById('welcome-screen').style.display = 'none';
-  document.getElementById('note-view').style.display = 'none';
-  document.getElementById('graph-view').style.display = 'flex';
+  const panel = document.getElementById('graph-panel');
+  if (panel) panel.classList.remove('hidden');
   document.getElementById('btn-graph').classList.add('active');
+
+  // Update sub-label with current note title
+  const sub = document.getElementById('graph-panel-sub');
+  if (sub && activeTabId) {
+    const n = getNote(activeTabId);
+    if (n) sub.textContent = n.title || 'all connections';
+  } else if (sub) {
+    sub.textContent = 'all connections';
+  }
+
+  // Ensure note view stays visible
+  if (activeTabId) {
+    document.getElementById('note-view').style.display = 'flex';
+    document.getElementById('welcome-screen').style.display = 'none';
+  }
+
   setTimeout(initGraph, 60);
 }
 
 function hideGraph() {
-  document.getElementById('graph-view').style.display = 'none';
+  const panel = document.getElementById('graph-panel');
+  if (panel) panel.classList.add('hidden');
   document.getElementById('btn-graph').classList.remove('active');
   if (graphAnim) { cancelAnimationFrame(graphAnim); graphAnim = null; }
-  if (activeTabId) document.getElementById('note-view').style.display = 'flex';
-  else document.getElementById('welcome-screen').style.display = '';
+}
+
+function isGraphVisible() {
+  const p = document.getElementById('graph-panel');
+  return p && !p.classList.contains('hidden');
 }
 
 function initGraph() {
@@ -2821,8 +3304,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       case 'g':
         e.preventDefault();
-        const gv = document.getElementById('graph-view');
-        if (gv && gv.style.display !== 'none') hideGraph();
+        if (isGraphVisible()) hideGraph();
         else showGraph();
         break;
 
@@ -2856,21 +3338,405 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ─── INIT ───
+  // Boot is handled by vault system (enterVault)
+  console.info('Notiva app.js DOMContentLoaded wired.');
+});
+
+
+// ══════════════════════════════════════════════
+//  VAULT SYSTEM
+// ══════════════════════════════════════════════
+
+// Simple hash for password (not cryptographic, just obfuscation for localStorage)
+function hashPassword(pw) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < pw.length; i++) {
+    h ^= pw.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  // second pass for length dependency
+  for (let i = pw.length - 1; i >= 0; i--) {
+    h ^= pw.charCodeAt(i) * 31;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return 'h_' + h.toString(16).padStart(8,'0') + '_' + pw.length;
+}
+
+// Vault registry stored under a separate key
+function loadVaultRegistry() {
+  try {
+    const r = localStorage.getItem('notiva_vaults_registry');
+    if (r) return JSON.parse(r);
+  } catch(e) {}
+  // Auto-migrate: if notiva_v3 exists, wrap it as a "Default" vault
+  const legacy = localStorage.getItem('notiva_v3');
+  const defaultVault = {
+    id: 'vault_default',
+    name: 'Default Vault',
+    emoji: '✦',
+    hasPassword: false,
+    passwordHash: null,
+    created: Date.now(),
+    noteCount: 0
+  };
+  const registry = { vaults: [defaultVault], lastVaultId: null };
+  saveVaultRegistry(registry);
+  return registry;
+}
+
+function saveVaultRegistry(registry) {
+  try { localStorage.setItem('notiva_vaults_registry', JSON.stringify(registry)); } catch(e) {}
+}
+
+let vaultRegistry = loadVaultRegistry();
+let currentVaultId = null;
+let pendingUnlockVaultId = null;
+let selectedVaultEmoji = '✦';
+
+function getVaultDataKey(vaultId) {
+  return 'notiva_vault_data_' + vaultId;
+}
+
+function loadVaultData(vaultId) {
+  try {
+    const key = getVaultDataKey(vaultId);
+    const d = localStorage.getItem(key);
+    if (d) return JSON.parse(d);
+    // Migrate legacy notiva_v3 into the default vault
+    if (vaultId === 'vault_default') {
+      const leg = localStorage.getItem('notiva_v3');
+      if (leg) {
+        localStorage.setItem(key, leg);
+        return JSON.parse(leg);
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveVaultData(vaultId, data) {
+  try {
+    localStorage.setItem(getVaultDataKey(vaultId), JSON.stringify(data));
+    // Update note count
+    const vaultMeta = vaultRegistry.vaults.find(v => v.id === vaultId);
+    if (vaultMeta) { vaultMeta.noteCount = data.notes ? data.notes.length : 0; saveVaultRegistry(vaultRegistry); }
+  } catch(e) {}
+}
+
+// Render vault list cards
+function renderVaultCards() {
+  const container = document.getElementById('vault-list-cards');
+  if (!container) return;
+  if (!vaultRegistry.vaults.length) {
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-family:Literata,serif;font-style:italic">No vaults yet. Create your first one!</div>';
+    return;
+  }
+  container.innerHTML = vaultRegistry.vaults.map(v => `
+    <div class="vault-card" onclick="openVaultCard('${v.id}')">
+      <div class="vault-card-icon">${v.emoji || '✦'}</div>
+      <div class="vault-card-info">
+        <div class="vault-card-name">${escHtml(v.name)}</div>
+        <div class="vault-card-meta">${v.noteCount || 0} notes · created ${new Date(v.created).toLocaleDateString()}</div>
+      </div>
+      <span class="vault-card-lock">${v.hasPassword ? '🔒' : '🔓'}</span>
+      <span class="vault-card-arrow">›</span>
+    </div>
+  `).join('');
+}
+
+function showVaultList() {
+  document.getElementById('vault-list-view').style.display = '';
+  document.getElementById('vault-unlock-view').style.display = 'none';
+  document.getElementById('vault-create-view').style.display = 'none';
+  renderVaultCards();
+  pendingUnlockVaultId = null;
+}
+
+function showVaultCreateForm() {
+  document.getElementById('vault-list-view').style.display = 'none';
+  document.getElementById('vault-unlock-view').style.display = 'none';
+  document.getElementById('vault-create-view').style.display = '';
+  document.getElementById('new-vault-name').value = '';
+  document.getElementById('new-vault-pw').value = '';
+  document.getElementById('new-vault-pw2').value = '';
+  document.getElementById('vault-has-password').checked = false;
+  document.getElementById('vault-pw-fields').style.display = 'none';
+  document.getElementById('create-vault-error').textContent = '';
+  selectedVaultEmoji = '✦';
+  document.querySelectorAll('.vault-emoji-opt').forEach(e => e.classList.toggle('selected', e.dataset.emoji === '✦'));
+  setTimeout(() => document.getElementById('new-vault-name').focus(), 120);
+}
+
+function selectVaultEmoji(el) {
+  document.querySelectorAll('.vault-emoji-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedVaultEmoji = el.dataset.emoji;
+}
+
+function toggleVaultPwField() {
+  const checked = document.getElementById('vault-has-password').checked;
+  document.getElementById('vault-pw-fields').style.display = checked ? 'flex' : 'none';
+}
+
+function createVault() {
+  const nameEl = document.getElementById('new-vault-name');
+  const hasPw = document.getElementById('vault-has-password').checked;
+  const pw1 = document.getElementById('new-vault-pw').value;
+  const pw2 = document.getElementById('new-vault-pw2').value;
+  const errEl = document.getElementById('create-vault-error');
+  errEl.textContent = '';
+
+  const name = nameEl.value.trim();
+  if (!name) { errEl.textContent = 'Please enter a vault name.'; nameEl.focus(); return; }
+  if (hasPw) {
+    if (pw1.length < 4) { errEl.textContent = 'Password must be at least 4 characters.'; return; }
+    if (pw1 !== pw2) { errEl.textContent = 'Passwords do not match.'; return; }
+  }
+
+  const vaultId = 'vault_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  const newVault = {
+    id: vaultId, name, emoji: selectedVaultEmoji,
+    hasPassword: hasPw,
+    passwordHash: hasPw ? hashPassword(pw1) : null,
+    created: Date.now(), noteCount: 0
+  };
+
+  // Create empty vault data
+  const emptyData = {
+    folders: [{ id: uid(), name: 'Notes', open: true }],
+    notes: []
+  };
+  saveVaultData(vaultId, emptyData);
+
+  vaultRegistry.vaults.push(newVault);
+  saveVaultRegistry(vaultRegistry);
+  enterVault(vaultId);
+}
+
+function openVaultCard(vaultId) {
+  const vaultMeta = vaultRegistry.vaults.find(v => v.id === vaultId);
+  if (!vaultMeta) return;
+  if (vaultMeta.hasPassword) {
+    showUnlockScreen(vaultId);
+  } else {
+    enterVault(vaultId);
+  }
+}
+
+function showUnlockScreen(vaultId) {
+  const vaultMeta = vaultRegistry.vaults.find(v => v.id === vaultId);
+  if (!vaultMeta) return;
+  pendingUnlockVaultId = vaultId;
+  document.getElementById('vault-list-view').style.display = 'none';
+  document.getElementById('vault-unlock-view').style.display = '';
+  document.getElementById('vault-create-view').style.display = 'none';
+  document.getElementById('unlock-icon').textContent = vaultMeta.emoji || '🔒';
+  document.getElementById('unlock-name').textContent = vaultMeta.name;
+  document.getElementById('unlock-hint').textContent = 'Enter password to unlock "' + vaultMeta.name + '"';
+  const pwEl = document.getElementById('unlock-pw');
+  pwEl.value = '';
+  pwEl.classList.remove('error');
+  document.getElementById('unlock-error').textContent = '';
+  setTimeout(() => pwEl.focus(), 150);
+}
+
+function attemptUnlock() {
+  const pw = document.getElementById('unlock-pw').value;
+  const vaultMeta = vaultRegistry.vaults.find(v => v.id === pendingUnlockVaultId);
+  if (!vaultMeta) return;
+  if (hashPassword(pw) === vaultMeta.passwordHash) {
+    enterVault(pendingUnlockVaultId);
+  } else {
+    const pwEl = document.getElementById('unlock-pw');
+    pwEl.classList.add('error');
+    document.getElementById('unlock-error').textContent = 'Incorrect password. Please try again.';
+    setTimeout(() => pwEl.classList.remove('error'), 600);
+    pwEl.select();
+  }
+}
+
+function enterVault(vaultId) {
+  currentVaultId = vaultId;
+  vaultRegistry.lastVaultId = vaultId;
+  saveVaultRegistry(vaultRegistry);
+
+  // Load vault data
+  const savedData = loadVaultData(vaultId);
+  if (savedData) {
+    vault = savedData;
+  } else {
+    vault = JSON.parse(JSON.stringify(DEFAULT_VAULT));
+  }
+
+  // Override saveVault to target this vault
+  window._origSaveVault = window._origSaveVault || saveVault;
+
+  // Update vault topbar badge
+  const vaultMeta = vaultRegistry.vaults.find(v => v.id === vaultId);
+  const badge = document.getElementById('vault-topbar-badge-bar');
+  if (badge && vaultMeta) badge.textContent = (vaultMeta.emoji || '✦') + ' ' + vaultMeta.name;
+
+  // Hide vault screen, show app
+  document.getElementById('vault-screen').classList.add('hidden');
+  document.getElementById('vault-topbar-info-bar').style.display = 'flex';
+
+  // Boot app
+  openTabs = [];
+  activeTabId = null;
   renderSidebar();
   updatePanel();
+  if (vault.notes.length > 0) openNote(vault.notes[0].id);
+  else showWelcome();
+  if (typeof isMobile === 'function' && isMobile()) mobileSwitchView('notes');
+}
 
-  // Open first note on load
-  if (vault.notes.length > 0) {
-    openNote(vault.notes[0].id);
+// Patch saveVault to always use current vault
+const _origSaveVault = saveVault;
+function saveVault() {
+  if (currentVaultId) {
+    try { saveVaultData(currentVaultId, vault); } catch(e) {}
+    const dot = document.getElementById('save-dot');
+    const st = document.getElementById('save-status');
+    if (dot) dot.classList.remove('saving');
+    if (st) st.textContent = 'Saved';
+  } else {
+    _origSaveVault();
+  }
+}
+
+function switchVault() {
+  // Save current state before switching
+  saveEditorToNote();
+  if (currentVaultId) saveVault();
+  // Reset app state
+  openTabs = []; activeTabId = null; currentVaultId = null;
+  vault = JSON.parse(JSON.stringify(DEFAULT_VAULT));
+  // Show vault screen
+  document.getElementById('vault-screen').classList.remove('hidden');
+  document.getElementById('vault-topbar-info-bar').style.display = 'none';
+  showVaultList();
+}
+
+// Wire up Enter key in unlock input
+document.addEventListener('DOMContentLoaded', function() {
+  const unlockPw = document.getElementById('unlock-pw');
+  if (unlockPw) {
+    unlockPw.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') attemptUnlock();
+    });
+  }
+  const newVaultName = document.getElementById('new-vault-name');
+  if (newVaultName) {
+    newVaultName.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') createVault();
+    });
+  }
+  const newVaultPw2 = document.getElementById('new-vault-pw2');
+  if (newVaultPw2) {
+    newVaultPw2.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') createVault();
+    });
   }
 
-  // On mobile, start on notes list view
-  if (isMobile()) {
-    mobileSwitchView('notes');
+  // Wire vault theme pill
+  const vaultPill = document.getElementById('vault-theme-pill');
+  if (vaultPill) {
+    vaultPill.addEventListener('click', function() {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('notiva_theme', next);
+      const metaT = document.getElementById('meta-theme-color');
+      if (metaT) metaT.setAttribute('content', next === 'dark' ? '#111114' : '#ffffff');
+    });
   }
 
-  console.info('Notiva loaded. %d notes, %d folders.', vault.notes.length, vault.folders.length);
+  // Auto-open last vault if only one and no password
+  const reg = loadVaultRegistry();
+  if (reg.vaults.length === 1 && !reg.vaults[0].hasPassword) {
+    enterVault(reg.vaults[0].id);
+    return;
+  }
+  // If had a last vault (no password), auto-open
+  if (reg.lastVaultId) {
+    const lastV = reg.vaults.find(v => v.id === reg.lastVaultId);
+    if (lastV && !lastV.hasPassword) {
+      enterVault(lastV.id);
+      return;
+    }
+  }
+  // Otherwise show vault screen
+  showVaultList();
 });
+
+
+// ── GRAPH PANEL RESIZE ──────────────────────────────────────────────────
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    const handle = document.getElementById('graph-resize-handle');
+    const panel  = document.getElementById('graph-panel');
+    if (!handle || !panel) return;
+
+    let dragging = false, startX = 0, startW = 0;
+
+    handle.addEventListener('mousedown', function(e) {
+      dragging = true; startX = e.clientX; startW = panel.offsetWidth;
+      handle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      const delta = startX - e.clientX;
+      const newW = Math.max(180, Math.min(600, startW + delta));
+      panel.style.width = newW + 'px';
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (!dragging) return;
+      dragging = false;
+      handle.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      // Re-init graph to fit new size
+      if (typeof initGraph === 'function' && typeof isGraphVisible === 'function' && isGraphVisible()) {
+        setTimeout(initGraph, 30);
+      }
+    });
+
+    // Touch resize
+    handle.addEventListener('touchstart', function(e) {
+      dragging = true; startX = e.touches[0].clientX; startW = panel.offsetWidth;
+      handle.classList.add('dragging');
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      const delta = startX - e.touches[0].clientX;
+      const newW = Math.max(180, Math.min(500, startW + delta));
+      panel.style.width = newW + 'px';
+    }, { passive: true });
+    document.addEventListener('touchend', function() {
+      if (!dragging) return;
+      dragging = false;
+      handle.classList.remove('dragging');
+      if (typeof initGraph === 'function' && typeof isGraphVisible === 'function' && isGraphVisible()) {
+        setTimeout(initGraph, 30);
+      }
+    });
+  });
+})();
+
+
+// ── SERVICE WORKER REGISTRATION ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function() {
+      // SW registration failed (e.g. local file://) — app still works
+    });
+  });
+}
+
 </script>
 </body>
 </html>

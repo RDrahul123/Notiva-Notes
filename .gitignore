@@ -1,33 +1,25 @@
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
-
-# Editor directories
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# Dependency directories (if you ever add a build step)
-node_modules/
-.npm/
-
-# Build output (if added later)
-dist/
-build/
 
 # Logs
 *.log
 npm-debug.log*
 
-# Environment
+# Node (if anyone adds a build step later)
+node_modules/
+dist/
 .env
-.env.local
-.env.*.local
-
-# GitHub Pages
-.jekyll-cache/
-_site/
