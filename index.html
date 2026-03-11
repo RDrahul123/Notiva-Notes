@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Notiva — Your graph-based second brain. Offline-first note-taking.">
 <meta name="theme-color" content="#111114" id="meta-theme-color">
 <title>Notiva — Your Second Brain</title>
@@ -84,6 +84,10 @@
    layout.css — Page structure and layout
    ============================================= */
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 html, body {
   height: 100%;
   height: 100dvh; /* dynamic viewport height for mobile */
@@ -352,25 +356,24 @@ body {
 
 /* ── THEME PILL ── */
 .theme-pill {
-  width: 52px; height: 28px;
+  width: 56px; height: 28px;
   border-radius: 14px;
   border: 1.5px solid var(--border);
   background: var(--bg-tertiary);
   cursor: pointer; position: relative;
   display: flex; align-items: center; padding: 3px;
-  flex-shrink: 0; overflow: hidden;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
 }
 .theme-pill-thumb {
   width: 20px; height: 20px; border-radius: 50%;
   background: var(--accent);
   position: absolute; left: 3px;
-  transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1), background 0.2s ease;
-  box-shadow: 0 2px 6px var(--shadow);
-  will-change: transform;
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), background 0.22s ease;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 [data-theme="light"] .theme-pill-thumb {
-  transform: translateX(23px);
+  transform: translateX(27px);
   background: var(--gold);
 }
 .theme-pill-bg {
@@ -560,7 +563,7 @@ body {
   width: 100%; background: var(--bg-tertiary);
   border: 1px solid var(--border); border-radius: 8px;
   padding: 11px 14px; color: var(--text-primary);
-  font-family: 'Literata', serif; font-size: 15px;
+  font-family: 'Literata', serif; font-size: 16px;
   outline: none; margin-bottom: 12px;
   -webkit-appearance: none;
 }
@@ -902,21 +905,25 @@ mark {
 /* Mobile search bar */
 .mobile-search-bar {
   display: none;
+  position: fixed;
+  top: 50px; left: 0; right: 0;
+  z-index: 360;
   align-items: center; gap: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
+  box-shadow: 0 4px 16px var(--shadow-lg);
 }
 .mobile-search-bar input {
   flex: 1; background: none; border: none; outline: none;
   color: var(--text-primary);
-  font-family: 'Syne', sans-serif; font-size: 14px;
+  font-family: 'Syne', sans-serif; font-size: 16px;
 }
 .mobile-search-bar input::placeholder { color: var(--text-muted); }
 .mobile-search-bar button {
   background: none; border: none; color: var(--text-muted);
-  font-size: 14px; cursor: pointer; padding: 4px;
+  font-size: 14px; cursor: pointer; padding: 6px;
+  -webkit-tap-highlight-color: transparent;
 }
 .mobile-search-bar.visible { display: flex; }
 
@@ -1127,57 +1134,23 @@ mark {
   .vault-screen { padding-top: 0; }
   .vault-card { padding: 12px 14px; }
 
-  /* ── Theme pill on mobile ── */
-  .theme-pill { width: 52px; height: 28px; }
+  /* ── Theme pill ── */
+  .theme-pill { width: 48px; height: 26px; }
 
-  /* ── AI panel back button (mobile) ── */
-  .ai-panel-back {
-    width: 36px; height: 36px; border-radius: 9px; border: none;
-    background: var(--bg-hover); color: var(--text-secondary);
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; -webkit-tap-highlight-color: transparent;
-    margin-right: 2px;
+  /* ── CRITICAL: All inputs must be >= 16px to prevent iOS auto-zoom ── */
+  input, textarea, select,
+  .modal-input, .modal-select,
+  .note-title-input,
+  .ai-key-input, .ai-chat-input,
+  .vault-form-input, .vault-pw-input,
+  .topbar-search input,
+  .mobile-search-bar input,
+  #side-search, #global-search,
+  #new-vault-name, #new-vault-pw, #new-vault-pw2,
+  #new-note-name, #new-folder-name, #new-tag-val, #rename-val,
+  #mobile-search-input, #ai-key-input, #ai-chat-input {
+    font-size: 16px !important;
   }
-  .ai-panel-back:active { background: var(--accent-glow); color: var(--accent); transform: scale(0.92); }
-
-  /* ── Panel back button (graph, etc.) ── */
-  .panel-back-btn {
-    width: 36px; height: 36px; border-radius: 9px; border: none;
-    background: transparent; color: var(--text-secondary);
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; -webkit-tap-highlight-color: transparent;
-  }
-  .panel-back-btn:active { background: var(--bg-hover); transform: scale(0.92); }
-
-  /* ── Right panel drag handle ── */
-  .panel-drag-handle {
-    width: 40px; height: 4px; border-radius: 2px;
-    background: var(--border);
-    margin: 10px auto 6px; cursor: pointer; flex-shrink: 0;
-  }
-  .panel-drag-handle:active { background: var(--accent-dim); }
-
-  /* ── Sidebar drawer header ── */
-  .sidebar-top-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 14px 8px; flex-shrink: 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .sidebar-drawer-title {
-    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
-    color: var(--text-primary); letter-spacing: -0.3px;
-  }
-  .sidebar-close-btn {
-    width: 32px; height: 32px; border-radius: 8px; border: none;
-    background: var(--bg-hover); color: var(--text-muted);
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; -webkit-tap-highlight-color: transparent;
-  }
-  .sidebar-close-btn:active { background: var(--accent-glow); color: var(--accent); }
-
-  /* ── Key input: larger on mobile ── */
-  .ai-key-input { font-size: 14px; padding: 12px; }
-  .ai-key-save  { padding: 11px 16px; font-size: 13px; }
 }
 
 /* ─────────────────────────────────────────
@@ -1187,7 +1160,7 @@ mark {
   .topbar { gap: 4px; }
   .logo-gem { display: none; }
   .logo-text { font-size: 15px; }
-  .theme-pill { width: 52px; height: 26px; }
+  .theme-pill { width: 44px; }
   .theme-pill-bg { font-size: 9px; }
 }
 
@@ -1215,15 +1188,6 @@ mark {
   .tree-folder:hover { background: transparent; color: var(--text-secondary); }
   .topbar-btn:hover { background: transparent; color: var(--text-secondary); }
 }
-
-/* ─────────────────────────────────────────
-   PANEL NAVIGATION ELEMENTS (mobile-only default hidden)
-───────────────────────────────────────── */
-.ai-panel-back   { display: none; }
-.panel-back-btn  { display: none; }
-.panel-drag-handle { display: none; }
-.sidebar-top-row { display: none; } /* shown via mobile CSS */
-.sidebar-close-btn { display: none; }
 
 /* ─────────────────────────────────────────
    PRINT
@@ -1486,7 +1450,7 @@ mark {
   width: 100%; background: var(--bg-tertiary);
   border: 1px solid var(--border); border-radius: 9px;
   padding: 12px 14px; color: var(--text-primary);
-  font-family: 'Literata', serif; font-size: 15px;
+  font-family: 'Literata', serif; font-size: 16px;
   outline: none; -webkit-appearance: none;
 }
 .vault-form-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 2px var(--accent-glow); }
@@ -1679,8 +1643,8 @@ mark {
 .ai-key-input {
   flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border);
   border-radius: 8px; padding: 9px 12px; color: var(--text-primary);
-  font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none;
-  -webkit-appearance: none; letter-spacing: 1px; min-width: 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; outline: none;
+  -webkit-appearance: none; letter-spacing: 0.5px; min-width: 0;
 }
 .ai-key-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 2px var(--accent-glow); }
 .ai-key-eye {
@@ -1825,7 +1789,7 @@ mark {
 .ai-chat-input {
   flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border);
   border-radius: 10px; padding: 9px 12px; color: var(--text-primary);
-  font-family: 'Literata', serif; font-size: 14px; outline: none;
+  font-family: 'Literata', serif; font-size: 16px; outline: none;
   resize: none; min-height: 38px; max-height: 110px; line-height: 1.5;
   -webkit-appearance: none;
 }
@@ -1909,10 +1873,6 @@ mark {
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-top-row mobile-only">
-      <span class="sidebar-drawer-title">Notes</span>
-      <button class="sidebar-close-btn" onclick="closeMobileSidebar()" title="Close" aria-label="Close sidebar">✕</button>
-    </div>
     <div class="sidebar-tabs">
       <button class="sidebar-tab active" onclick="switchSideTab('files',this)">Files</button>
       <button class="sidebar-tab" onclick="switchSideTab('search',this)">Search</button>
@@ -1922,7 +1882,7 @@ mark {
       <div id="tab-files"></div>
       <div id="tab-search" style="display:none">
         <div style="padding:6px 0">
-          <input type="search" id="side-search" class="modal-input" style="margin-bottom:8px;font-size:13px" placeholder="Search or #tag…" autocomplete="off">
+          <input type="search" id="side-search" class="modal-input" style="margin-bottom:8px;" placeholder="Search or #tag…" autocomplete="off">
           <div id="search-results"></div>
         </div>
       </div>
@@ -2015,12 +1975,9 @@ mark {
       <!-- GRAPH PANEL (right side, alongside note) -->
       <div class="graph-panel hidden" id="graph-panel">
         <div class="graph-panel-header">
-          <button class="panel-back-btn mobile-only" onclick="hideGraph();mobileSwitchView('editor')" title="Back" aria-label="Back">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4L6 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
           <span class="graph-panel-title">✦ Graph</span>
           <span class="graph-panel-sub" id="graph-panel-sub">all connections</span>
-          <button class="graph-panel-close desktop-only" onclick="hideGraph()" title="Close graph">✕</button>
+          <button class="graph-panel-close" onclick="hideGraph()" title="Close graph">✕</button>
         </div>
         <div class="graph-container" id="graph-container" style="flex:1;overflow:hidden;position:relative">
           <canvas id="graph-canvas"></canvas>
@@ -2030,7 +1987,6 @@ mark {
 
       <!-- Right Panel -->
       <aside class="right-panel collapsed" id="right-panel">
-        <div class="panel-drag-handle mobile-only" onclick="closeMobilePanel();mobileSwitchView('editor')" title="Close"></div>
         <div class="panel-tabs">
           <button class="ptab active" onclick="switchPanelTab('info',this)">Info</button>
           <button class="ptab" onclick="switchPanelTab('links',this)">Links</button>
@@ -2044,21 +2000,15 @@ mark {
 
 </div><!-- /workspace -->
 
-<!-- AI backdrop (mobile) -->
-<div id="ai-backdrop" style="display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.4);backdrop-filter:blur(1px)" onclick="closeAIPanel()"></div>
-
 <!-- AI PANEL -->
 <div class="ai-panel" id="ai-panel">
 
   <!-- Header -->
   <div class="ai-panel-header">
-    <button class="ai-panel-back mobile-only" onclick="closeAIPanel()" title="Back" aria-label="Back">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4L6 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div class="ai-header-icon desktop-only">✦</div>
+    <div class="ai-header-icon">✦</div>
     <div class="ai-panel-title">Notiva AI</div>
     <button class="ai-panel-key-btn" id="ai-key-icon-btn" onclick="toggleAIKeyPanel()" title="API Key settings">🔑</button>
-    <button class="ai-panel-close desktop-only" onclick="closeAIPanel()" title="Close">✕</button>
+    <button class="ai-panel-close" onclick="closeAIPanel()" title="Close">✕</button>
   </div>
 
   <!-- Key section (collapsed by default) -->
@@ -4293,7 +4243,6 @@ function openAIPanel() {
   aiKeyPanelOpen = false;
   const ks = document.getElementById('ai-key-section');
   if (ks) ks.style.display = 'none';
-  // No backdrop on mobile since it's full-screen
 }
 
 function closeAIPanel() {
@@ -4585,233 +4534,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Init UI state
   updateAIKeyUI();
 });
-
-
-
-// ══════════════════════════════════════════════════════════════
-//  MOBILE GESTURES & UX POLISH
-// ══════════════════════════════════════════════════════════════
-
-(function() {
-  // ── Swipe-down to close bottom sheets ──────────────────────
-  function addSwipeDownClose(el, closeFn, threshold = 80) {
-    if (!el) return;
-    let startY = 0, startX = 0, dragging = false;
-    el.addEventListener('touchstart', function(e) {
-      startY = e.touches[0].clientY;
-      startX = e.touches[0].clientX;
-      dragging = true;
-      el.style.transition = 'none';
-    }, { passive: true });
-    el.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      const dy = e.touches[0].clientY - startY;
-      const dx = e.touches[0].clientX - startX;
-      if (dy > 0 && Math.abs(dy) > Math.abs(dx)) {
-        el.style.transform = 'translateY(' + dy + 'px)';
-      }
-    }, { passive: true });
-    el.addEventListener('touchend', function(e) {
-      dragging = false;
-      const dy = e.changedTouches[0].clientY - startY;
-      el.style.transition = '';
-      if (dy > threshold) {
-        closeFn();
-      } else {
-        el.style.transform = '';
-      }
-    }, { passive: true });
-  }
-
-  // ── Swipe-right to close side panels (AI, sidebar) ─────────
-  function addSwipeRightClose(el, closeFn, threshold = 80) {
-    if (!el) return;
-    let startX = 0, startY = 0, dragging = false;
-    el.addEventListener('touchstart', function(e) {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      dragging = true;
-      el.style.transition = 'none';
-    }, { passive: true });
-    el.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-      if (dx > 0 && Math.abs(dx) > Math.abs(dy)) {
-        el.style.transform = 'translateX(' + dx + 'px)';
-      }
-    }, { passive: true });
-    el.addEventListener('touchend', function(e) {
-      dragging = false;
-      const dx = e.changedTouches[0].clientX - startX;
-      el.style.transition = '';
-      if (dx > threshold) {
-        closeFn();
-        el.style.transform = '';
-      } else {
-        el.style.transform = '';
-      }
-    }, { passive: true });
-  }
-
-  // ── Swipe-left to close left-side drawer (sidebar) ─────────
-  function addSwipeLeftClose(el, closeFn, threshold = 80) {
-    if (!el) return;
-    let startX = 0, startY = 0, dragging = false;
-    el.addEventListener('touchstart', function(e) {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      dragging = true;
-    }, { passive: true });
-    el.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-      if (dx < 0 && Math.abs(dx) > Math.abs(dy)) {
-        const clamped = Math.max(dx, -300);
-        el.style.transition = 'none';
-        el.style.transform = 'translateX(' + clamped + 'px)';
-      }
-    }, { passive: true });
-    el.addEventListener('touchend', function(e) {
-      dragging = false;
-      const dx = e.changedTouches[0].clientX - startX;
-      el.style.transition = '';
-      el.style.transform = '';
-      if (dx < -threshold) closeFn();
-    }, { passive: true });
-  }
-
-  // ── Wire everything up once DOM is ready ────────────────────
-  document.addEventListener('DOMContentLoaded', function() {
-    if (!isMobile || typeof isMobile !== 'function') return;
-
-    // Right panel (bottom sheet) — swipe down
-    const rightPanel = document.getElementById('right-panel');
-    addSwipeDownClose(rightPanel, function() {
-      closeMobilePanel();
-      mobileSwitchView('editor');
-    });
-
-    // AI panel (right slide) — swipe right to dismiss
-    const aiPanel = document.getElementById('ai-panel');
-    addSwipeRightClose(aiPanel, function() {
-      closeAIPanel();
-      if (typeof mobileView !== 'undefined' && isMobile()) {
-        const mbn = document.getElementById('mbn-editor');
-        if (mbn) {
-          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
-          mbn.classList.add('active');
-        }
-      }
-    });
-
-    // Sidebar (left drawer) — swipe left to dismiss
-    const sidebar = document.getElementById('sidebar');
-    addSwipeLeftClose(sidebar, function() {
-      closeMobileSidebar();
-      if (isMobile()) {
-        const mbn = document.getElementById('mbn-notes');
-        if (mbn) {
-          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
-          // don't set active on notes since we closed it
-          const editorBtn = document.getElementById('mbn-editor');
-          if (editorBtn) editorBtn.classList.add('active');
-        }
-      }
-    });
-
-    // Backdrop tap to close sidebar
-    const overlay = document.getElementById('sidebar-overlay');
-    if (overlay) {
-      overlay.addEventListener('click', function() {
-        closeMobileSidebar();
-        if (isMobile()) {
-          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
-          const editorBtn = document.getElementById('mbn-editor');
-          if (editorBtn) editorBtn.classList.add('active');
-        }
-      });
-    }
-
-    // Backdrop tap to close AI panel on mobile (tap outside)
-    // We'll add a transparent overlay behind AI panel on mobile
-    const aiBackdrop = document.getElementById('ai-backdrop');
-    if (aiBackdrop) {
-      aiBackdrop.addEventListener('click', function() {
-        if (isMobile()) closeAIPanel();
-      });
-    }
-
-    // Double-tap toolbar to show search (mobile UX)
-    // Long-press on note title to rename
-    const noteTitleEl = document.getElementById('note-title');
-    if (noteTitleEl) {
-      let longPressTimer;
-      noteTitleEl.addEventListener('touchstart', function() {
-        longPressTimer = setTimeout(function() {
-          // Trigger rename via select-all
-          noteTitleEl.select && noteTitleEl.select();
-        }, 600);
-      }, { passive: true });
-      noteTitleEl.addEventListener('touchend', function() {
-        clearTimeout(longPressTimer);
-      }, { passive: true });
-    }
-
-    // Haptic feedback helper (if supported)
-    window.haptic = function(type) {
-      if (navigator.vibrate) {
-        if (type === 'light') navigator.vibrate(10);
-        else if (type === 'medium') navigator.vibrate(20);
-        else if (type === 'heavy') navigator.vibrate([30, 10, 30]);
-      }
-    };
-
-    // Add haptic to bottom nav buttons
-    document.querySelectorAll('.mbn-btn').forEach(function(btn) {
-      btn.addEventListener('touchstart', function() { window.haptic('light'); }, { passive: true });
-    });
-
-    // Add haptic to AI quick action buttons
-    document.querySelectorAll('.ai-quick-btn').forEach(function(btn) {
-      btn.addEventListener('touchstart', function() { window.haptic('light'); }, { passive: true });
-    });
-
-  });
-
-  // ── closeAIPanel update: also reset bottom nav active state on mobile ──────
-  const _origCloseAI = window.closeAIPanel;
-  if (typeof _origCloseAI === 'function') {
-    window.closeAIPanel = function() {
-      _origCloseAI();
-      if (typeof isMobile === 'function' && isMobile()) {
-        const aiPanel = document.getElementById('ai-panel');
-        if (aiPanel) aiPanel.style.transform = '';
-        // Update bottom nav
-        const mbnAI = document.getElementById('mbn-ai');
-        if (mbnAI) mbnAI.classList.remove('active');
-        const mbnEditor = document.getElementById('mbn-editor');
-        if (mbnEditor) mbnEditor.classList.add('active');
-      }
-    };
-  }
-
-  // ── hideGraph update: reset bottom nav on mobile ─────────────────────────
-  const _origHideGraph = window.hideGraph;
-  if (typeof _origHideGraph === 'function') {
-    window.hideGraph = function() {
-      _origHideGraph();
-      if (typeof isMobile === 'function' && isMobile()) {
-        const mbnGraph = document.getElementById('mbn-graph');
-        if (mbnGraph) mbnGraph.classList.remove('active');
-        const mbnEditor = document.getElementById('mbn-editor');
-        if (mbnEditor) mbnEditor.classList.add('active');
-      }
-    };
-  }
-
-})();
 
 </script>
 </body>
