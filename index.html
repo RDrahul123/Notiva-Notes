@@ -352,24 +352,25 @@ body {
 
 /* ── THEME PILL ── */
 .theme-pill {
-  width: 56px; height: 28px;
+  width: 52px; height: 28px;
   border-radius: 14px;
   border: 1.5px solid var(--border);
   background: var(--bg-tertiary);
   cursor: pointer; position: relative;
   display: flex; align-items: center; padding: 3px;
-  flex-shrink: 0;
+  flex-shrink: 0; overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 .theme-pill-thumb {
   width: 20px; height: 20px; border-radius: 50%;
   background: var(--accent);
   position: absolute; left: 3px;
-  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), background 0.22s ease;
-  box-shadow: 0 2px 8px var(--shadow);
+  transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1), background 0.2s ease;
+  box-shadow: 0 2px 6px var(--shadow);
+  will-change: transform;
 }
 [data-theme="light"] .theme-pill-thumb {
-  transform: translateX(27px);
+  transform: translateX(23px);
   background: var(--gold);
 }
 .theme-pill-bg {
@@ -1126,8 +1127,57 @@ mark {
   .vault-screen { padding-top: 0; }
   .vault-card { padding: 12px 14px; }
 
-  /* ── Theme pill ── */
-  .theme-pill { width: 48px; height: 26px; }
+  /* ── Theme pill on mobile ── */
+  .theme-pill { width: 52px; height: 28px; }
+
+  /* ── AI panel back button (mobile) ── */
+  .ai-panel-back {
+    width: 36px; height: 36px; border-radius: 9px; border: none;
+    background: var(--bg-hover); color: var(--text-secondary);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+    margin-right: 2px;
+  }
+  .ai-panel-back:active { background: var(--accent-glow); color: var(--accent); transform: scale(0.92); }
+
+  /* ── Panel back button (graph, etc.) ── */
+  .panel-back-btn {
+    width: 36px; height: 36px; border-radius: 9px; border: none;
+    background: transparent; color: var(--text-secondary);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+  }
+  .panel-back-btn:active { background: var(--bg-hover); transform: scale(0.92); }
+
+  /* ── Right panel drag handle ── */
+  .panel-drag-handle {
+    width: 40px; height: 4px; border-radius: 2px;
+    background: var(--border);
+    margin: 10px auto 6px; cursor: pointer; flex-shrink: 0;
+  }
+  .panel-drag-handle:active { background: var(--accent-dim); }
+
+  /* ── Sidebar drawer header ── */
+  .sidebar-top-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 14px 8px; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-drawer-title {
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
+    color: var(--text-primary); letter-spacing: -0.3px;
+  }
+  .sidebar-close-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: var(--bg-hover); color: var(--text-muted);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; -webkit-tap-highlight-color: transparent;
+  }
+  .sidebar-close-btn:active { background: var(--accent-glow); color: var(--accent); }
+
+  /* ── Key input: larger on mobile ── */
+  .ai-key-input { font-size: 14px; padding: 12px; }
+  .ai-key-save  { padding: 11px 16px; font-size: 13px; }
 }
 
 /* ─────────────────────────────────────────
@@ -1137,7 +1187,7 @@ mark {
   .topbar { gap: 4px; }
   .logo-gem { display: none; }
   .logo-text { font-size: 15px; }
-  .theme-pill { width: 44px; }
+  .theme-pill { width: 52px; height: 26px; }
   .theme-pill-bg { font-size: 9px; }
 }
 
@@ -1165,6 +1215,15 @@ mark {
   .tree-folder:hover { background: transparent; color: var(--text-secondary); }
   .topbar-btn:hover { background: transparent; color: var(--text-secondary); }
 }
+
+/* ─────────────────────────────────────────
+   PANEL NAVIGATION ELEMENTS (mobile-only default hidden)
+───────────────────────────────────────── */
+.ai-panel-back   { display: none; }
+.panel-back-btn  { display: none; }
+.panel-drag-handle { display: none; }
+.sidebar-top-row { display: none; } /* shown via mobile CSS */
+.sidebar-close-btn { display: none; }
 
 /* ─────────────────────────────────────────
    PRINT
@@ -1786,173 +1845,6 @@ mark {
   .ai-quick-btn { padding: 5px 10px; font-size: 10px; }
 }
 
-
-/* ── IMAGE SUPPORT ───────────────────────────────────────────── */
-
-/* Images inside note editor */
-.note-editor img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  display: block;
-  margin: 12px 0;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  outline: none;
-}
-.note-editor img:hover {
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-.note-editor img.img-selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-/* Image wrapper with resize handles */
-.img-wrapper {
-  display: inline-block;
-  position: relative;
-  max-width: 100%;
-  margin: 12px 0;
-  line-height: 0;
-  vertical-align: top;
-}
-.img-wrapper img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  transition: border-color 0.15s;
-  margin: 0;
-  cursor: default;
-}
-.img-wrapper.selected > img {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-/* Image toolbar (appears when image is selected) */
-.img-toolbar {
-  position: absolute;
-  top: -36px; left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  box-shadow: 0 4px 16px var(--shadow-lg);
-  z-index: 100;
-  white-space: nowrap;
-}
-.img-toolbar-btn {
-  padding: 4px 9px;
-  border-radius: 5px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: 'Syne', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.img-toolbar-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
-.img-toolbar-btn.danger:hover { background: rgba(255,70,70,0.1); color: #ff6060; }
-.img-toolbar-sep {
-  width: 1px; background: var(--border); margin: 3px 1px;
-}
-/* Resize handle (bottom-right corner) */
-.img-resize-handle {
-  position: absolute;
-  bottom: -5px; right: -5px;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--bg-primary);
-  cursor: se-resize;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 10;
-}
-.img-wrapper.selected .img-resize-handle { opacity: 1; }
-
-/* Image drop zone highlight */
-.note-editor.img-drag-over {
-  outline: 2px dashed var(--accent);
-  outline-offset: -4px;
-  background: var(--accent-glow);
-}
-
-/* Image upload progress */
-.img-placeholder {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px 20px;
-  background: var(--bg-tertiary);
-  border: 1px dashed var(--border);
-  border-radius: 8px;
-  color: var(--text-muted);
-  font-family: 'Syne', sans-serif;
-  font-size: 12px;
-  margin: 8px 0;
-  min-width: 120px;
-}
-
-/* Image in preview pane */
-.preview-area img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  display: block;
-  margin: 12px 0;
-}
-
-/* Image size classes */
-.note-editor img.img-small  { max-width: 240px; }
-.note-editor img.img-medium { max-width: 480px; }
-.note-editor img.img-large  { max-width: 100%; }
-
-/* Image modal (fullscreen lightbox) */
-.img-lightbox {
-  position: fixed; inset: 0; z-index: 600;
-  background: rgba(0,0,0,0.88);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  cursor: zoom-out;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: lbIn 0.18s ease;
-}
-@keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
-.img-lightbox img {
-  max-width: min(90vw, 1200px);
-  max-height: 90dvh;
-  border-radius: 10px;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.8);
-  cursor: default;
-  user-select: none;
-}
-.img-lightbox-close {
-  position: absolute; top: 16px; right: 16px;
-  width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  border: none; color: #fff; font-size: 18px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.img-lightbox-close:hover { background: rgba(255,255,255,0.25); }
-
-/* Toolbar image button */
-.tb-btn-img {
-  display: flex; align-items: center; gap: 4px;
-}
-
 </style>
 </head>
 <body>
@@ -2017,6 +1909,10 @@ mark {
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top-row mobile-only">
+      <span class="sidebar-drawer-title">Notes</span>
+      <button class="sidebar-close-btn" onclick="closeMobileSidebar()" title="Close" aria-label="Close sidebar">✕</button>
+    </div>
     <div class="sidebar-tabs">
       <button class="sidebar-tab active" onclick="switchSideTab('files',this)">Files</button>
       <button class="sidebar-tab" onclick="switchSideTab('search',this)">Search</button>
@@ -2093,12 +1989,6 @@ mark {
               <button class="tb-btn" onclick="insertWikiLink()">[[link]]</button>
               <button class="tb-btn" onclick="insertHR()">—</button>
             </div>
-            <div class="toolbar-group">
-              <button class="tb-btn tb-btn-img" onclick="triggerImageUpload()" title="Insert image">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="4.5" cy="5.5" r="1" fill="currentColor" opacity=".7"/><path d="M1 9l3-3 2.5 2.5L9 6l3 3" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/></svg>
-                Img
-              </button>
-            </div>
             <span class="word-count" id="word-count">0 words</span>
             <button class="ai-trigger-btn" id="ai-trigger-btn" onclick="openAIPanel()" title="AI Assistant (✦)">
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.1 3.4H10L7.2 6.5l1.1 3.4L5.5 8l-2.8 1.9 1.1-3.4L1 4.4h3.4z" fill="currentColor"/></svg>
@@ -2116,7 +2006,6 @@ mark {
           </div>
           <div class="editor-split-wrapper">
             <div contenteditable="true" id="note-editor" class="note-editor" data-placeholder="Start writing… use [[ for wikilinks" spellcheck="true"></div>
-            <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImageFiles(this.files)">
             <div id="preview-pane" class="preview-area"></div>
           </div>
         </div>
@@ -2126,9 +2015,12 @@ mark {
       <!-- GRAPH PANEL (right side, alongside note) -->
       <div class="graph-panel hidden" id="graph-panel">
         <div class="graph-panel-header">
+          <button class="panel-back-btn mobile-only" onclick="hideGraph();mobileSwitchView('editor')" title="Back" aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4L6 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
           <span class="graph-panel-title">✦ Graph</span>
           <span class="graph-panel-sub" id="graph-panel-sub">all connections</span>
-          <button class="graph-panel-close" onclick="hideGraph()" title="Close graph">✕</button>
+          <button class="graph-panel-close desktop-only" onclick="hideGraph()" title="Close graph">✕</button>
         </div>
         <div class="graph-container" id="graph-container" style="flex:1;overflow:hidden;position:relative">
           <canvas id="graph-canvas"></canvas>
@@ -2138,6 +2030,7 @@ mark {
 
       <!-- Right Panel -->
       <aside class="right-panel collapsed" id="right-panel">
+        <div class="panel-drag-handle mobile-only" onclick="closeMobilePanel();mobileSwitchView('editor')" title="Close"></div>
         <div class="panel-tabs">
           <button class="ptab active" onclick="switchPanelTab('info',this)">Info</button>
           <button class="ptab" onclick="switchPanelTab('links',this)">Links</button>
@@ -2151,15 +2044,21 @@ mark {
 
 </div><!-- /workspace -->
 
+<!-- AI backdrop (mobile) -->
+<div id="ai-backdrop" style="display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.4);backdrop-filter:blur(1px)" onclick="closeAIPanel()"></div>
+
 <!-- AI PANEL -->
 <div class="ai-panel" id="ai-panel">
 
   <!-- Header -->
   <div class="ai-panel-header">
-    <div class="ai-header-icon">✦</div>
+    <button class="ai-panel-back mobile-only" onclick="closeAIPanel()" title="Back" aria-label="Back">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4L6 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="ai-header-icon desktop-only">✦</div>
     <div class="ai-panel-title">Notiva AI</div>
     <button class="ai-panel-key-btn" id="ai-key-icon-btn" onclick="toggleAIKeyPanel()" title="API Key settings">🔑</button>
-    <button class="ai-panel-close" onclick="closeAIPanel()" title="Close">✕</button>
+    <button class="ai-panel-close desktop-only" onclick="closeAIPanel()" title="Close">✕</button>
   </div>
 
   <!-- Key section (collapsed by default) -->
@@ -2933,12 +2832,7 @@ function saveEditorToNote() {
   if (!n) return;
   const editorEl = document.getElementById('note-editor');
   const titleEl = document.getElementById('note-title');
-  if (editorEl) {
-    // Strip loading placeholders before saving
-    const clone = editorEl.cloneNode(true);
-    clone.querySelectorAll('.img-placeholder').forEach(el => el.remove());
-    n.content = clone.innerHTML;
-  }
+  if (editorEl) n.content = editorEl.innerHTML;
   if (titleEl) n.title = titleEl.value || 'Untitled';
   n.modified = Date.now();
 }
@@ -2952,10 +2846,7 @@ document.addEventListener('DOMContentLoaded', function () {
     editor.addEventListener('input', function () {
       if (!activeTabId) return;
       const n = getNote(activeTabId);
-      if (n) {
-        const _c = editor.cloneNode(true); _c.querySelectorAll('.img-placeholder').forEach(e=>e.remove());
-        n.content = _c.innerHTML; n.modified = Date.now();
-      }
+      if (n) { n.content = editor.innerHTML; n.modified = Date.now(); }
       markDirty();
       updateWC();
       if (currentMode !== 'edit') updatePreview();
@@ -3116,18 +3007,7 @@ function updatePreview() {
   const ed = document.getElementById('note-editor');
   const pre = document.getElementById('preview-pane');
   if (!ed || !pre) return;
-
-  // Clone editor so we can strip image toolbars/handles for clean preview
-  const clone = ed.cloneNode(true);
-  clone.querySelectorAll('.img-toolbar, .img-resize-handle').forEach(el => el.remove());
-  clone.querySelectorAll('.img-wrapper').forEach(w => {
-    // Unwrap: replace wrapper div with just the img
-    const img = w.querySelector('img');
-    if (img) w.replaceWith(img.cloneNode());
-  });
-  clone.querySelectorAll('.img-placeholder').forEach(el => el.remove());
-
-  const html = clone.innerHTML.replace(/\[\[([^\]]+)\]\]/g, (_, t) =>
+  const html = ed.innerHTML.replace(/\[\[([^\]]+)\]\]/g, (_, t) =>
     `<span class="wikilink" onclick="openByTitle('${escAttr(t)}')">[[${t}]]</span>`
   );
   pre.innerHTML = html;
@@ -4413,6 +4293,7 @@ function openAIPanel() {
   aiKeyPanelOpen = false;
   const ks = document.getElementById('ai-key-section');
   if (ks) ks.style.display = 'none';
+  // No backdrop on mobile since it's full-screen
 }
 
 function closeAIPanel() {
@@ -4708,348 +4589,229 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ══════════════════════════════════════════════════════════════
-//  IMAGE SUPPORT
-//  - Paste from clipboard (Ctrl+V)
-//  - Drag & drop onto editor
-//  - Toolbar button (file picker)
-//  - Click-to-select with inline toolbar (resize, align, delete)
-//  - Corner drag to resize
-//  - Double-click for lightbox
-//  - Images stored as base64 inside note HTML (persisted to localStorage)
+//  MOBILE GESTURES & UX POLISH
 // ══════════════════════════════════════════════════════════════
 
-// ── Utilities ────────────────────────────────────────────────
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = e => resolve(e.target.result);
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsDataURL(file);
-  });
-}
-
-// Compress image to keep localStorage under control
-// Target: max 1200px wide, quality 0.82 for JPEG/WebP
-function compressImage(dataUrl, maxW = 1200, maxH = 1600, quality = 0.82) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      let { width, height } = img;
-      if (width > maxW || height > maxH) {
-        const ratio = Math.min(maxW / width, maxH / height);
-        width  = Math.round(width  * ratio);
-        height = Math.round(height * ratio);
+(function() {
+  // ── Swipe-down to close bottom sheets ──────────────────────
+  function addSwipeDownClose(el, closeFn, threshold = 80) {
+    if (!el) return;
+    let startY = 0, startX = 0, dragging = false;
+    el.addEventListener('touchstart', function(e) {
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      dragging = true;
+      el.style.transition = 'none';
+    }, { passive: true });
+    el.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      const dy = e.touches[0].clientY - startY;
+      const dx = e.touches[0].clientX - startX;
+      if (dy > 0 && Math.abs(dy) > Math.abs(dx)) {
+        el.style.transform = 'translateY(' + dy + 'px)';
       }
-      const canvas = document.createElement('canvas');
-      canvas.width  = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      // Use WebP if supported, fallback to JPEG
-      const out = canvas.toDataURL('image/webp', quality);
-      resolve(out.startsWith('data:image/webp') ? out : canvas.toDataURL('image/jpeg', quality));
+    }, { passive: true });
+    el.addEventListener('touchend', function(e) {
+      dragging = false;
+      const dy = e.changedTouches[0].clientY - startY;
+      el.style.transition = '';
+      if (dy > threshold) {
+        closeFn();
+      } else {
+        el.style.transform = '';
+      }
+    }, { passive: true });
+  }
+
+  // ── Swipe-right to close side panels (AI, sidebar) ─────────
+  function addSwipeRightClose(el, closeFn, threshold = 80) {
+    if (!el) return;
+    let startX = 0, startY = 0, dragging = false;
+    el.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dragging = true;
+      el.style.transition = 'none';
+    }, { passive: true });
+    el.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (dx > 0 && Math.abs(dx) > Math.abs(dy)) {
+        el.style.transform = 'translateX(' + dx + 'px)';
+      }
+    }, { passive: true });
+    el.addEventListener('touchend', function(e) {
+      dragging = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      el.style.transition = '';
+      if (dx > threshold) {
+        closeFn();
+        el.style.transform = '';
+      } else {
+        el.style.transform = '';
+      }
+    }, { passive: true });
+  }
+
+  // ── Swipe-left to close left-side drawer (sidebar) ─────────
+  function addSwipeLeftClose(el, closeFn, threshold = 80) {
+    if (!el) return;
+    let startX = 0, startY = 0, dragging = false;
+    el.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dragging = true;
+    }, { passive: true });
+    el.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (dx < 0 && Math.abs(dx) > Math.abs(dy)) {
+        const clamped = Math.max(dx, -300);
+        el.style.transition = 'none';
+        el.style.transform = 'translateX(' + clamped + 'px)';
+      }
+    }, { passive: true });
+    el.addEventListener('touchend', function(e) {
+      dragging = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      el.style.transition = '';
+      el.style.transform = '';
+      if (dx < -threshold) closeFn();
+    }, { passive: true });
+  }
+
+  // ── Wire everything up once DOM is ready ────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!isMobile || typeof isMobile !== 'function') return;
+
+    // Right panel (bottom sheet) — swipe down
+    const rightPanel = document.getElementById('right-panel');
+    addSwipeDownClose(rightPanel, function() {
+      closeMobilePanel();
+      mobileSwitchView('editor');
+    });
+
+    // AI panel (right slide) — swipe right to dismiss
+    const aiPanel = document.getElementById('ai-panel');
+    addSwipeRightClose(aiPanel, function() {
+      closeAIPanel();
+      if (typeof mobileView !== 'undefined' && isMobile()) {
+        const mbn = document.getElementById('mbn-editor');
+        if (mbn) {
+          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+          mbn.classList.add('active');
+        }
+      }
+    });
+
+    // Sidebar (left drawer) — swipe left to dismiss
+    const sidebar = document.getElementById('sidebar');
+    addSwipeLeftClose(sidebar, function() {
+      closeMobileSidebar();
+      if (isMobile()) {
+        const mbn = document.getElementById('mbn-notes');
+        if (mbn) {
+          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+          // don't set active on notes since we closed it
+          const editorBtn = document.getElementById('mbn-editor');
+          if (editorBtn) editorBtn.classList.add('active');
+        }
+      }
+    });
+
+    // Backdrop tap to close sidebar
+    const overlay = document.getElementById('sidebar-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', function() {
+        closeMobileSidebar();
+        if (isMobile()) {
+          document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+          const editorBtn = document.getElementById('mbn-editor');
+          if (editorBtn) editorBtn.classList.add('active');
+        }
+      });
+    }
+
+    // Backdrop tap to close AI panel on mobile (tap outside)
+    // We'll add a transparent overlay behind AI panel on mobile
+    const aiBackdrop = document.getElementById('ai-backdrop');
+    if (aiBackdrop) {
+      aiBackdrop.addEventListener('click', function() {
+        if (isMobile()) closeAIPanel();
+      });
+    }
+
+    // Double-tap toolbar to show search (mobile UX)
+    // Long-press on note title to rename
+    const noteTitleEl = document.getElementById('note-title');
+    if (noteTitleEl) {
+      let longPressTimer;
+      noteTitleEl.addEventListener('touchstart', function() {
+        longPressTimer = setTimeout(function() {
+          // Trigger rename via select-all
+          noteTitleEl.select && noteTitleEl.select();
+        }, 600);
+      }, { passive: true });
+      noteTitleEl.addEventListener('touchend', function() {
+        clearTimeout(longPressTimer);
+      }, { passive: true });
+    }
+
+    // Haptic feedback helper (if supported)
+    window.haptic = function(type) {
+      if (navigator.vibrate) {
+        if (type === 'light') navigator.vibrate(10);
+        else if (type === 'medium') navigator.vibrate(20);
+        else if (type === 'heavy') navigator.vibrate([30, 10, 30]);
+      }
     };
-    img.onerror = () => resolve(dataUrl); // fallback: use original
-    img.src = dataUrl;
-  });
-}
 
-// ── Insert image into editor ─────────────────────────────────
-
-async function insertImageFromFile(file) {
-  if (!file || !file.type.startsWith('image/')) return;
-  const editor = document.getElementById('note-editor');
-  if (!editor) return;
-
-  // Show placeholder while processing
-  const placeholderId = 'imgph_' + Date.now();
-  editor.focus();
-  document.execCommand('insertHTML', false,
-    `<span class="img-placeholder" id="${placeholderId}">⏳ Loading image…</span>`);
-
-  try {
-    const raw    = await fileToBase64(file);
-    const b64    = await compressImage(raw);
-    const ph     = document.getElementById(placeholderId);
-
-    const wrapperHtml = buildImgHtml(b64, file.name || 'image');
-    if (ph) {
-      ph.outerHTML = wrapperHtml;
-    } else {
-      document.execCommand('insertHTML', false, wrapperHtml);
-    }
-
-    // Attach interactivity to newly inserted image
-    requestAnimationFrame(() => {
-      editor.querySelectorAll('.img-wrapper:not([data-wired])').forEach(wireImgWrapper);
-      syncEditorToNote();
-      markDirty();
+    // Add haptic to bottom nav buttons
+    document.querySelectorAll('.mbn-btn').forEach(function(btn) {
+      btn.addEventListener('touchstart', function() { window.haptic('light'); }, { passive: true });
     });
-  } catch (err) {
-    const ph = document.getElementById(placeholderId);
-    if (ph) ph.outerHTML = `<span style="color:#ff6060;font-size:12px">[Image failed to load]</span>`;
-    showToast('⚠ Could not load image: ' + (err.message || 'unknown error'));
-  }
-}
 
-function buildImgHtml(src, alt) {
-  return `<div class="img-wrapper" contenteditable="false">` +
-    `<img src="${src}" alt="${alt || 'image'}" class="img-large" draggable="false">` +
-    `<div class="img-toolbar" style="display:none">` +
-      `<button class="img-toolbar-btn" onclick="imgSize(this,'img-small')" title="Small">S</button>` +
-      `<button class="img-toolbar-btn" onclick="imgSize(this,'img-medium')" title="Medium">M</button>` +
-      `<button class="img-toolbar-btn" onclick="imgSize(this,'img-large')" title="Full width">L</button>` +
-      `<div class="img-toolbar-sep"></div>` +
-      `<button class="img-toolbar-btn" onclick="imgAlign(this,'left')" title="Align left">◀</button>` +
-      `<button class="img-toolbar-btn" onclick="imgAlign(this,'center')" title="Center">◆</button>` +
-      `<button class="img-toolbar-btn" onclick="imgAlign(this,'right')" title="Align right">▶</button>` +
-      `<div class="img-toolbar-sep"></div>` +
-      `<button class="img-toolbar-btn" onclick="imgLightbox(this)" title="Fullscreen">⛶</button>` +
-      `<div class="img-toolbar-sep"></div>` +
-      `<button class="img-toolbar-btn danger" onclick="imgDelete(this)" title="Delete">✕</button>` +
-    `</div>` +
-    `<div class="img-resize-handle"></div>` +
-  `</div>`;
-}
-
-// ── Wire up image interactivity ──────────────────────────────
-
-function wireImgWrapper(wrapper) {
-  wrapper.setAttribute('data-wired', '1');
-  const img     = wrapper.querySelector('img');
-  const toolbar = wrapper.querySelector('.img-toolbar');
-  const handle  = wrapper.querySelector('.img-resize-handle');
-
-  // Click → select
-  img.addEventListener('click', (e) => {
-    e.stopPropagation();
-    selectImg(wrapper);
-  });
-
-  // Double-click → lightbox
-  img.addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openLightbox(img.src);
-  });
-
-  // Resize handle — drag to resize
-  if (handle) {
-    let startX, startW;
-    handle.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      startX = e.clientX;
-      startW = img.offsetWidth;
-      const onMove = (ev) => {
-        const newW = Math.max(80, startW + ev.clientX - startX);
-        img.style.width  = newW + 'px';
-        img.style.maxWidth = '100%';
-        img.className = ''; // remove size classes when manually resized
-      };
-      const onUp = () => {
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-        syncEditorToNote(); markDirty();
-      };
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+    // Add haptic to AI quick action buttons
+    document.querySelectorAll('.ai-quick-btn').forEach(function(btn) {
+      btn.addEventListener('touchstart', function() { window.haptic('light'); }, { passive: true });
     });
-    // Touch resize
-    handle.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      startX = touch.clientX; startW = img.offsetWidth;
-      const onMove = (ev) => {
-        const t = ev.touches[0];
-        const newW = Math.max(80, startW + t.clientX - startX);
-        img.style.width  = newW + 'px';
-        img.style.maxWidth = '100%';
-        img.className = '';
-      };
-      const onEnd = () => {
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', onEnd);
-        syncEditorToNote(); markDirty();
-      };
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', onEnd);
-    }, { passive: false });
+
+  });
+
+  // ── closeAIPanel update: also reset bottom nav active state on mobile ──────
+  const _origCloseAI = window.closeAIPanel;
+  if (typeof _origCloseAI === 'function') {
+    window.closeAIPanel = function() {
+      _origCloseAI();
+      if (typeof isMobile === 'function' && isMobile()) {
+        const aiPanel = document.getElementById('ai-panel');
+        if (aiPanel) aiPanel.style.transform = '';
+        // Update bottom nav
+        const mbnAI = document.getElementById('mbn-ai');
+        if (mbnAI) mbnAI.classList.remove('active');
+        const mbnEditor = document.getElementById('mbn-editor');
+        if (mbnEditor) mbnEditor.classList.add('active');
+      }
+    };
   }
-}
 
-let selectedImgWrapper = null;
-
-function selectImg(wrapper) {
-  // Deselect previous
-  if (selectedImgWrapper && selectedImgWrapper !== wrapper) {
-    deselectAllImgs();
+  // ── hideGraph update: reset bottom nav on mobile ─────────────────────────
+  const _origHideGraph = window.hideGraph;
+  if (typeof _origHideGraph === 'function') {
+    window.hideGraph = function() {
+      _origHideGraph();
+      if (typeof isMobile === 'function' && isMobile()) {
+        const mbnGraph = document.getElementById('mbn-graph');
+        if (mbnGraph) mbnGraph.classList.remove('active');
+        const mbnEditor = document.getElementById('mbn-editor');
+        if (mbnEditor) mbnEditor.classList.add('active');
+      }
+    };
   }
-  selectedImgWrapper = wrapper;
-  wrapper.classList.add('selected');
-  const toolbar = wrapper.querySelector('.img-toolbar');
-  if (toolbar) toolbar.style.display = 'flex';
-}
 
-function deselectAllImgs() {
-  document.querySelectorAll('.img-wrapper.selected').forEach(w => {
-    w.classList.remove('selected');
-    const t = w.querySelector('.img-toolbar');
-    if (t) t.style.display = 'none';
-  });
-  selectedImgWrapper = null;
-}
-
-// Click outside → deselect
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.img-wrapper')) deselectAllImgs();
-});
-
-// ── Image toolbar actions ────────────────────────────────────
-
-function imgSize(btn, sizeClass) {
-  const wrapper = btn.closest('.img-wrapper');
-  const img = wrapper && wrapper.querySelector('img');
-  if (!img) return;
-  img.className = ''; // clear all size classes
-  img.style.width = '';
-  img.classList.add(sizeClass);
-  syncEditorToNote(); markDirty();
-}
-
-function imgAlign(btn, align) {
-  const wrapper = btn.closest('.img-wrapper');
-  if (!wrapper) return;
-  wrapper.style.display = 'block';
-  if (align === 'center') {
-    wrapper.style.marginLeft = 'auto';
-    wrapper.style.marginRight = 'auto';
-    wrapper.style.textAlign = 'center';
-  } else if (align === 'right') {
-    wrapper.style.marginLeft = 'auto';
-    wrapper.style.marginRight = '0';
-    wrapper.style.textAlign = 'right';
-  } else {
-    wrapper.style.marginLeft = '0';
-    wrapper.style.marginRight = 'auto';
-    wrapper.style.textAlign = 'left';
-  }
-  syncEditorToNote(); markDirty();
-}
-
-function imgDelete(btn) {
-  const wrapper = btn.closest('.img-wrapper');
-  if (wrapper) { wrapper.remove(); syncEditorToNote(); markDirty(); }
-}
-
-function imgLightbox(btn) {
-  const wrapper = btn.closest('.img-wrapper');
-  const img = wrapper && wrapper.querySelector('img');
-  if (img) openLightbox(img.src);
-}
-
-// ── Lightbox ─────────────────────────────────────────────────
-
-function openLightbox(src) {
-  const lb = document.createElement('div');
-  lb.className = 'img-lightbox';
-  lb.innerHTML = `<img src="${src}" alt="image"><button class="img-lightbox-close" title="Close">✕</button>`;
-  lb.addEventListener('click', (e) => { if (e.target === lb || e.target.closest('.img-lightbox-close')) lb.remove(); });
-  // Keyboard close
-  const onKey = (e) => { if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', onKey); } };
-  document.addEventListener('keydown', onKey);
-  document.body.appendChild(lb);
-}
-
-// ── Sync editor HTML back to note object ────────────────────
-
-function syncEditorToNote() {
-  const editor = document.getElementById('note-editor');
-  if (!editor || !activeTabId) return;
-  const n = getNote(activeTabId);
-  if (n) { n.content = editor.innerHTML; n.modified = Date.now(); }
-}
-
-// ── Trigger file picker ──────────────────────────────────────
-
-function triggerImageUpload() {
-  const inp = document.getElementById('img-file-input');
-  if (inp) { inp.value = ''; inp.click(); }
-}
-
-function handleImageFiles(files) {
-  if (!files || !files.length) return;
-  Array.from(files).forEach(f => insertImageFromFile(f));
-}
-
-// ── Paste handler — intercept images from clipboard ─────────
-
-document.addEventListener('DOMContentLoaded', function () {
-  const editor = document.getElementById('note-editor');
-  if (!editor) return;
-
-  // ── PASTE ────────────────────────────────────────────────────
-  editor.addEventListener('paste', function (e) {
-    const items = e.clipboardData && e.clipboardData.items;
-    if (!items) return;
-
-    // Check if any clipboard item is an image
-    const imageItems = Array.from(items).filter(it => it.type.startsWith('image/'));
-    if (!imageItems.length) return; // Let normal text paste proceed
-
-    e.preventDefault(); // Block browser's default image paste (ugly blob URL)
-
-    imageItems.forEach(item => {
-      const file = item.getAsFile();
-      if (file) insertImageFromFile(file);
-    });
-  });
-
-  // ── DRAG & DROP ──────────────────────────────────────────────
-  editor.addEventListener('dragover', function (e) {
-    const hasImage = Array.from(e.dataTransfer.types || []).includes('Files');
-    if (!hasImage) return;
-    e.preventDefault();
-    editor.classList.add('img-drag-over');
-  });
-
-  editor.addEventListener('dragleave', function (e) {
-    // Only remove if truly leaving the editor (not entering a child)
-    if (!editor.contains(e.relatedTarget)) {
-      editor.classList.remove('img-drag-over');
-    }
-  });
-
-  editor.addEventListener('drop', function (e) {
-    editor.classList.remove('img-drag-over');
-    const files = e.dataTransfer && e.dataTransfer.files;
-    if (!files || !files.length) return;
-    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-    if (!imageFiles.length) return;
-    e.preventDefault();
-    imageFiles.forEach(f => insertImageFromFile(f));
-  });
-
-  // ── WIRE EXISTING IMAGES (on note open) ─────────────────────
-  // Called from openNote() after editor content is set
-});
-
-// Called after editor content is loaded (openNote wires this)
-function wireAllImages() {
-  const editor = document.getElementById('note-editor');
-  if (!editor) return;
-  editor.querySelectorAll('.img-wrapper:not([data-wired])').forEach(wireImgWrapper);
-  // Also wire plain <img> tags (from old pastes) — wrap them
-  editor.querySelectorAll('img:not(.img-wrapper img)').forEach(img => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'img-wrapper';
-    wrapper.setAttribute('contenteditable', 'false');
-    wrapper.innerHTML = buildImgHtml(img.src, img.alt).replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '');
-    img.replaceWith(wrapper);
-    wireImgWrapper(wrapper);
-  });
-}
+})();
 
 </script>
 </body>
