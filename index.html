@@ -846,6 +846,105 @@ mark {
 .note-editor .wikilink { color: var(--accent-3); border-bottom: 1px dashed var(--accent-3); cursor: pointer; }
 .note-editor .wikilink:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
+/* ── EDITOR IMAGES ─────────────────────────────────────── */
+.note-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease !important;
+  -webkit-user-select: none; user-select: none;
+}
+.note-editor img:hover {
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+/* Image wrapper when selected */
+.img-wrap {
+  display: inline-block;
+  position: relative;
+  line-height: 0;
+  margin: 8px 0;
+  max-width: 100%;
+}
+.img-wrap.selected > img {
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 4px var(--accent-glow);
+  border-radius: 6px;
+}
+
+/* Resize toolbar that floats above image */
+.img-toolbar {
+  position: absolute;
+  top: -36px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+  box-shadow: 0 4px 16px var(--shadow-lg);
+  z-index: 50;
+  white-space: nowrap;
+  pointer-events: all;
+}
+.img-toolbar-btn {
+  padding: 3px 8px; border-radius: 5px; border: none;
+  background: transparent; color: var(--text-secondary);
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  min-height: 26px; min-width: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+.img-toolbar-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.img-toolbar-btn.active { background: var(--accent-glow); color: var(--accent); }
+.img-toolbar-sep {
+  width: 1px; height: 16px;
+  background: var(--border); flex-shrink: 0; margin: 0 2px;
+}
+.img-toolbar-del {
+  padding: 3px 7px; border-radius: 5px; border: none;
+  background: transparent; color: var(--text-muted);
+  font-size: 12px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 26px; display: flex; align-items: center; justify-content: center;
+}
+.img-toolbar-del:hover { background: rgba(255,70,70,0.1); color: #ff6060; }
+
+/* SE drag handle */
+.img-resize-handle {
+  position: absolute;
+  bottom: -5px; right: -5px;
+  width: 14px; height: 14px;
+  background: var(--accent);
+  border: 2px solid var(--bg-primary);
+  border-radius: 3px;
+  cursor: se-resize;
+  z-index: 51;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+/* Size label badge */
+.img-size-badge {
+  position: absolute;
+  bottom: 6px; right: 6px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  padding: 2px 6px; border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s !important;
+}
+.img-wrap.resizing .img-size-badge,
+.img-wrap.selected .img-size-badge { opacity: 1; }
+
+/* Preview area images */
+.preview-area img { max-width: 100%; height: auto; border-radius: 6px; margin: 8px 0; display: block; }
+
+
 /* ── PREVIEW ── */
 .preview-area {
   flex: 1; padding: 28px 80px;
@@ -2747,6 +2846,7 @@ function loadNote(id) {
 
   if (titleEl) titleEl.value = n.title || '';
   if (editorEl) editorEl.innerHTML = n.content || '';
+    setTimeout(rewireEditorImages, 20);
   if (dateEl) dateEl.textContent = 'Modified ' + new Date(n.modified).toLocaleDateString();
 
   updateBreadcrumb(n);
@@ -4534,6 +4634,313 @@ document.addEventListener('DOMContentLoaded', function() {
   // Init UI state
   updateAIKeyUI();
 });
+
+
+
+// ══════════════════════════════════════════════════════════════
+//  IMAGE PASTE + RESIZE SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+const IMG_MAX_PASTE_WIDTH = 480; // max px wide on paste
+let selectedImgWrap = null;
+
+// ── Paste handler ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  const editor = document.getElementById('note-editor');
+  if (!editor) return;
+
+  editor.addEventListener('paste', function (e) {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    let imageItem = null;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) { imageItem = item; break; }
+    }
+    if (!imageItem) return; // let normal paste proceed
+
+    e.preventDefault();
+    const file = imageItem.getAsFile();
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+      const dataUrl = evt.target.result;
+      // Load image to get natural dimensions
+      const tmp = new Image();
+      tmp.onload = function () {
+        // Cap initial width
+        const naturalW = tmp.naturalWidth;
+        const initialW = Math.min(naturalW, IMG_MAX_PASTE_WIDTH);
+        insertImageIntoEditor(dataUrl, initialW);
+      };
+      tmp.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Deselect image when clicking outside
+  editor.addEventListener('mousedown', function (e) {
+    if (!e.target.closest('.img-wrap')) deselectAllImages();
+  });
+  document.addEventListener('mousedown', function (e) {
+    if (!e.target.closest('.img-wrap') && !e.target.closest('.img-toolbar')) {
+      deselectAllImages();
+    }
+  });
+});
+
+// ── Insert image at cursor ────────────────────────────────────
+function insertImageIntoEditor(src, width) {
+  const editor = document.getElementById('note-editor');
+  if (!editor) return;
+  editor.focus();
+
+  const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  const html = buildImgWrapHTML(src, width, imgId);
+  document.execCommand('insertHTML', false, html);
+
+  // After insert, wire up the freshly inserted wrap
+  setTimeout(() => {
+    const wrap = editor.querySelector(`[data-imgid="${imgId}"]`);
+    if (wrap) wireImgWrap(wrap);
+    markDirty();
+    // Auto-save
+    if (activeTabId) {
+      const n = getNote(activeTabId);
+      if (n) { n.content = editor.innerHTML; n.modified = Date.now(); }
+    }
+  }, 30);
+}
+
+function buildImgWrapHTML(src, width, id) {
+  return `<span class="img-wrap" data-imgid="${id}" contenteditable="false">` +
+    `<img src="${src}" width="${width}" style="width:${width}px;max-width:100%;height:auto;" draggable="false">` +
+    `<span class="img-size-badge">${width}px</span>` +
+    `</span><br>`;
+}
+
+// ── Wire up resize/select on an img-wrap ─────────────────────
+function wireImgWrap(wrap) {
+  if (wrap._wired) return;
+  wrap._wired = true;
+
+  const img = wrap.querySelector('img');
+  if (!img) return;
+
+  // Click to select
+  img.addEventListener('click', function (e) {
+    e.stopPropagation();
+    selectImage(wrap);
+  });
+  img.addEventListener('touchend', function (e) {
+    e.stopPropagation();
+    selectImage(wrap);
+  }, { passive: true });
+
+  // Build toolbar
+  const toolbar = buildImgToolbar(wrap, img);
+  wrap.insertBefore(toolbar, wrap.firstChild);
+
+  // Build resize handle
+  const handle = document.createElement('span');
+  handle.className = 'img-resize-handle';
+  wrap.appendChild(handle);
+
+  // Wire resize handle — mouse
+  handle.addEventListener('mousedown', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    startImgResize(e.clientX, e.clientY, img, wrap, 'mouse');
+  });
+  // Wire resize handle — touch
+  handle.addEventListener('touchstart', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    const t = e.touches[0];
+    startImgResize(t.clientX, t.clientY, img, wrap, 'touch');
+  }, { passive: false });
+}
+
+// ── Toolbar ───────────────────────────────────────────────────
+function buildImgToolbar(wrap, img) {
+  const bar = document.createElement('span');
+  bar.className = 'img-toolbar';
+
+  const sizes = [
+    { label: 'S', title: 'Small (200px)',  px: 200 },
+    { label: 'M', title: 'Medium (360px)', px: 360 },
+    { label: 'L', title: 'Large (520px)',  px: 520 },
+    { label: '⤢', title: 'Full width',     px: '100%' },
+  ];
+
+  sizes.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'img-toolbar-btn';
+    btn.textContent = s.label;
+    btn.title = s.title;
+    btn.type = 'button';
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); e.stopPropagation(); });
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      applyImgSize(img, wrap, s.px);
+      updateImgToolbarActive(bar, s.px);
+    });
+    bar.appendChild(btn);
+  });
+
+  // Separator
+  const sep = document.createElement('span');
+  sep.className = 'img-toolbar-sep';
+  bar.appendChild(sep);
+
+  // Delete button
+  const del = document.createElement('button');
+  del.className = 'img-toolbar-del';
+  del.textContent = '🗑';
+  del.title = 'Remove image';
+  del.type = 'button';
+  del.addEventListener('mousedown', function (e) { e.preventDefault(); e.stopPropagation(); });
+  del.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (confirm('Remove this image?')) {
+      wrap.remove();
+      selectedImgWrap = null;
+      markDirty();
+      if (activeTabId) {
+        const editor = document.getElementById('note-editor');
+        const n = getNote(activeTabId);
+        if (n && editor) { n.content = editor.innerHTML; n.modified = Date.now(); }
+      }
+    }
+  });
+  bar.appendChild(del);
+
+  return bar;
+}
+
+function applyImgSize(img, wrap, px) {
+  const editor = document.getElementById('note-editor');
+  if (px === '100%') {
+    img.style.width = '100%';
+    img.removeAttribute('width');
+    updateSizeBadge(wrap, 'Full');
+  } else {
+    img.style.width = px + 'px';
+    img.setAttribute('width', px);
+    updateSizeBadge(wrap, px + 'px');
+  }
+  img.style.height = 'auto';
+  markDirty();
+  if (activeTabId && editor) {
+    const n = getNote(activeTabId);
+    if (n) { n.content = editor.innerHTML; n.modified = Date.now(); }
+  }
+}
+
+function updateImgToolbarActive(bar, activePx) {
+  bar.querySelectorAll('.img-toolbar-btn').forEach((btn, i) => {
+    const sizes = [200, 360, 520, '100%'];
+    btn.classList.toggle('active', sizes[i] === activePx);
+  });
+}
+
+function updateSizeBadge(wrap, label) {
+  const badge = wrap.querySelector('.img-size-badge');
+  if (badge) badge.textContent = label;
+}
+
+// ── Select / Deselect ─────────────────────────────────────────
+function selectImage(wrap) {
+  deselectAllImages();
+  wrap.classList.add('selected');
+  selectedImgWrap = wrap;
+  // Highlight correct size button
+  const img = wrap.querySelector('img');
+  const bar = wrap.querySelector('.img-toolbar');
+  if (img && bar) {
+    const w = parseInt(img.style.width) || img.width;
+    updateImgToolbarActive(bar, img.style.width === '100%' ? '100%' : w);
+  }
+}
+
+function deselectAllImages() {
+  document.querySelectorAll('.img-wrap.selected').forEach(w => w.classList.remove('selected'));
+  selectedImgWrap = null;
+}
+
+// ── Drag-to-resize ────────────────────────────────────────────
+function startImgResize(startX, startY, img, wrap, mode) {
+  const startW = img.getBoundingClientRect().width;
+  wrap.classList.add('selected', 'resizing');
+  selectedImgWrap = wrap;
+
+  function onMove(cx) {
+    const delta = cx - startX;
+    const newW = Math.max(60, Math.min(Math.round(startW + delta), 1200));
+    img.style.width = newW + 'px';
+    img.setAttribute('width', newW);
+    img.style.height = 'auto';
+    updateSizeBadge(wrap, newW + 'px');
+  }
+
+  function onEnd() {
+    wrap.classList.remove('resizing');
+    markDirty();
+    if (activeTabId) {
+      const editor = document.getElementById('note-editor');
+      const n = getNote(activeTabId);
+      if (n && editor) { n.content = editor.innerHTML; n.modified = Date.now(); }
+    }
+    if (mode === 'mouse') {
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
+    } else {
+      document.removeEventListener('touchmove', touchMoveHandler);
+      document.removeEventListener('touchend', touchEndHandler);
+    }
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }
+
+  if (mode === 'mouse') {
+    document.body.style.cursor = 'se-resize';
+    document.body.style.userSelect = 'none';
+    function mouseMoveHandler(e) { onMove(e.clientX); }
+    function mouseUpHandler()    { onEnd(); }
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('mouseup',   mouseUpHandler);
+  } else {
+    function touchMoveHandler(e) { e.preventDefault(); onMove(e.touches[0].clientX); }
+    function touchEndHandler()   { onEnd(); }
+    document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+    document.addEventListener('touchend',  touchEndHandler);
+  }
+}
+
+// ── Re-wire images after note load (saved notes) ─────────────
+function rewireEditorImages() {
+  const editor = document.getElementById('note-editor');
+  if (!editor) return;
+  // Existing plain <img> tags (from old saves) — wrap them
+  editor.querySelectorAll('img:not(.img-wrap img)').forEach(img => {
+    const wrap = document.createElement('span');
+    wrap.className = 'img-wrap';
+    wrap.setAttribute('contenteditable', 'false');
+    wrap.setAttribute('data-imgid', 'img_legacy_' + Date.now() + '_' + Math.random().toString(36).slice(2,5));
+    // Cap large legacy images
+    if (!img.style.width && (!img.width || img.width > IMG_MAX_PASTE_WIDTH)) {
+      img.style.width = IMG_MAX_PASTE_WIDTH + 'px';
+      img.style.height = 'auto';
+    }
+    const badge = document.createElement('span');
+    badge.className = 'img-size-badge';
+    badge.textContent = (img.style.width || img.width || '?');
+    img.parentNode.insertBefore(wrap, img);
+    wrap.appendChild(img);
+    wrap.appendChild(badge);
+  });
+  // Wire all img-wraps
+  editor.querySelectorAll('.img-wrap').forEach(wrap => {
+    if (!wrap._wired) wireImgWrap(wrap);
+  });
+}
 
 </script>
 </body>
