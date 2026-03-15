@@ -2,8 +2,8 @@
   "name": "Notiva — Your Second Brain",
   "short_name": "Notiva",
   "description": "Offline-first note-taking app with AI. Multi-vault, graph view, fully mobile.",
-  "start_url": "/notiva/",
-  "scope": "/notiva/",
+  "start_url": "/Notiva-Notes/",
+  "scope": "/Notiva-Notes/",
   "display": "standalone",
   "background_color": "#0d0d12",
   "theme_color": "#0d0d12",
@@ -14,7 +14,7 @@
   ],
   "categories": ["productivity", "utilities"],
   "shortcuts": [
-    { "name": "New Note", "short_name": "New", "description": "Create a new note", "url": "/?action=new", "icons": [{"src": "assets/icons/icon-192.png", "sizes": "192x192"}] }
+    { "name": "New Note", "short_name": "New", "description": "Create a new note", "url": "/Notiva-Notes/?action=new", "icons": [{"src": "assets/icons/icon-192.png", "sizes": "192x192"}] }
   ],
   "prefer_related_applications": false
 }
