@@ -30,6 +30,76 @@ html {
 }
 html, body { height: 100%; height: 100dvh; overflow: hidden; }
 
+/* ══════════════════════════════════════════════════════
+   DESKTOP: center the app as a phone-sized frame
+   On mobile it stays full-screen as intended.
+══════════════════════════════════════════════════════ */
+@media (min-width: 520px) {
+  body {
+    background: #07070d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  body::before {
+    content: 'Mobile app — best experienced on your phone';
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px; color: rgba(255,255,255,0.2);
+    white-space: nowrap; pointer-events: none; z-index: 9999;
+  }
+  /* Phone shell */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 452px; height: calc(min(900px, 100dvh) + 4px);
+    border-radius: 50px;
+    border: 1.5px solid rgba(255,255,255,0.09);
+    pointer-events: none; z-index: 9998;
+  }
+  .vault-screen {
+    position: fixed !important;
+    width: 430px !important; max-width: 430px !important;
+    height: min(900px, 100dvh) !important;
+    left: 50% !important; top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    border-radius: 44px !important;
+    overflow: hidden !important;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06) !important;
+  }
+  .app {
+    position: fixed !important;
+    width: 430px !important; max-width: 430px !important;
+    height: min(900px, 100dvh) !important;
+    left: 50% !important; top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    border-radius: 44px !important;
+    overflow: hidden !important;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06) !important;
+  }
+  .topbar { border-radius: 44px 44px 0 0; }
+  .bottom-nav { border-radius: 0 0 44px 44px; }
+  /* Modals/sheets contained within the phone frame */
+  .modal-overlay, .ctx-sheet {
+    position: absolute !important;
+    border-radius: 44px !important;
+    overflow: hidden;
+  }
+  .toast {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(0) !important;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0) !important;
+  }
+  .vault-theme-toggle { position: absolute !important; }
+  .drawer-overlay { position: absolute !important; border-radius: 44px !important; }
+}
+
 /* ── Design Tokens ── */
 :root {
   /* Brand */
