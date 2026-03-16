@@ -4299,9 +4299,18 @@ function saveAPIKey() {
   const encoded = encodeKey(raw);
   localStorage.setItem(AI_KEY_STORAGE, encoded);
   input.value = '';
+  // Auto-detect provider from key prefix
+  const detected = detectProvider(raw);
+  if (detected) {
+    localStorage.setItem(AI_PROVIDER_STORAGE, detected.id);
+    localStorage.setItem(AI_MODEL_STORAGE, detected.defaultModel);
+    showToast('🔑 ' + detected.icon + ' ' + detected.name + ' detected & saved!');
+  } else {
+    showToast('🔑 API key saved securely!');
+  }
   updateAIKeyUI();
+  updateDesktopModelBadge();
   showAIMainInterface();
-  showToast('🔑 API key saved securely!');
 }
 
 function clearAPIKey() {

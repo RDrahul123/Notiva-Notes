@@ -837,7 +837,7 @@ body {
 }
 
 .ai-key-form {
-  margin: 0 16px 0; padding: 14px 16px;
+  margin: 0 16px; padding: 14px 16px;
   background: var(--bg-1); border: 1px solid var(--border);
   border-radius: 16px; display: none; flex-direction: column; gap: 10px;
   flex-shrink: 0;
@@ -1329,7 +1329,7 @@ input:focus, textarea:focus { font-size: 16px; }
     </div>
 
     <!-- AI VIEW -->
-    <div class="view" id="view-ai">
+    <div class="view ai-view" id="view-ai">
       <div class="ai-view-inner">
         <div class="ai-header">
           <div class="ai-header-title">
@@ -2580,7 +2580,16 @@ function saveAPIKey() {
   if (raw.length < 20) { showToast('⚠ That doesn\'t look like a valid key'); return; }
   localStorage.setItem(AI_KEY_STORAGE, encodeKey(raw));
   if (inp) inp.value = '';
-  updateAIView(); showToast('🔑 Key saved securely');
+  // Auto-detect and save provider from key prefix
+  const detected = detectProvider(raw);
+  if (detected) {
+    localStorage.setItem(AI_PROVIDER_STORAGE, detected.id);
+    localStorage.setItem(AI_MODEL_STORAGE, detected.defaultModel);
+    showToast('🔑 Key saved · ' + detected.icon + ' ' + detected.name + ' detected');
+  } else {
+    showToast('🔑 Key saved securely');
+  }
+  updateAIView();
 }
 
 function clearAPIKey() {
@@ -2599,48 +2608,56 @@ function toggleKeyVisibility() {
 
 function showAIKeyForm() {
   const form = document.getElementById('ai-key-form');
-  if (form) form.classList.add('visible');
+  if (form) { form.style.display = 'flex'; form.style.flexDirection = 'column'; }
 }
 
 function updateAIView() {
-  updateAIProviderBadge();
   const has = hasAPIKey();
-  // Key form dots
-  const dot = document.getElementById('ai-key-dot');
-  const statusText = document.getElementById('ai-key-status-text');
+
+  // ── Key status indicators ──
+  const dot       = document.getElementById('ai-key-dot');
+  const statusTxt = document.getElementById('ai-key-status-text');
   const removeBtn = document.getElementById('ai-key-remove-btn');
-  if (dot) { dot.className = 'ai-key-dot ' + (has ? 'set' : 'unset'); }
-  if (statusText) statusText.textContent = has ? '✓ Key saved' : 'No key saved';
+  if (dot)       dot.className = 'ai-key-dot ' + (has ? 'set' : 'unset');
+  if (statusTxt) statusTxt.textContent = has ? '✓ Key saved' : 'No key saved';
   if (removeBtn) removeBtn.style.display = has ? '' : 'none';
 
-  // Show/hide main interface vs no-key state
-  const noKey = document.getElementById('ai-no-key');
-  const main = document.getElementById('ai-main');
+  // ── Show correct state ──
+  const noKey   = document.getElementById('ai-no-key');
+  const main    = document.getElementById('ai-main');
   const inputRow = document.getElementById('ai-chat-input-row');
+  const keyForm = document.getElementById('ai-key-form');
+
   if (has) {
-    if (noKey) noKey.style.display = 'none';
-    if (main) { main.style.display = 'flex'; main.style.flexDirection = 'column'; }
+    // Key exists → show main AI interface
+    if (noKey)    noKey.style.display    = 'none';
+    if (keyForm)  keyForm.style.display  = 'none';
+    if (main)     { main.style.display = 'flex'; main.style.flexDirection = 'column'; }
     if (inputRow) inputRow.style.display = 'flex';
-    // Hide key form if key is set
-    const form = document.getElementById('ai-key-form');
-    if (form && has) { /* keep if they opened it manually */ }
   } else {
-    if (noKey) noKey.style.display = '';
-    if (main) main.style.display = 'none';
+    // No key → show key entry form, hide everything else
+    if (noKey)    noKey.style.display    = 'none';  // badge replaces this now
+    if (keyForm)  { keyForm.style.display = 'flex'; keyForm.style.flexDirection = 'column'; }
+    if (main)     main.style.display     = 'none';
     if (inputRow) inputRow.style.display = 'none';
   }
 
-  // Context pill
+  // ── Context pill ──
   const pill = document.getElementById('ai-context-pill');
   if (pill) {
-    if (activeNoteId) {
-      const n = getNote(activeNoteId);
-      pill.textContent = n ? '📄 ' + (n.title || 'Untitled') : 'No note open';
-    } else pill.textContent = 'No note open';
+    const n = activeNoteId ? getNote(activeNoteId) : null;
+    pill.textContent = n ? '📄 ' + (n.title || 'Untitled') : 'No note open';
   }
+
+  // ── Provider badge ──
+  updateAIProviderBadge();
 }
 
-function openAIFromEditor() { switchView('ai'); updateAIView(); }
+function openAIFromEditor() {
+  switchView('ai');
+  // updateAIView is already called inside switchView('ai'), but force it again
+  setTimeout(updateAIView, 10);
+}
 
 let aiChatHistory = [];
 
