@@ -1114,6 +1114,44 @@ body {
    ════════════════════════════════════════════ */
 input, textarea, select { touch-action: manipulation; }
 input:focus, textarea:focus { font-size: 16px; }
+
+/* ── AI Model selector ── */
+.ai-provider-badge {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; margin: 0 16px 0;
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 14px; cursor: pointer; flex-shrink: 0;
+}
+.ai-provider-badge:active { background: var(--bg-2); }
+.ai-provider-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.ai-provider-info { flex: 1; min-width: 0; }
+.ai-provider-name { font-size: 13px; font-weight: 700; color: var(--text-1); }
+.ai-provider-model { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ai-provider-change { font-size: 11px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
+
+.model-sheet { display: none; position: fixed; inset: 0; z-index: 600; background: var(--overlay); backdrop-filter: blur(4px); align-items: flex-end; justify-content: center; }
+.model-sheet.visible { display: flex; }
+.model-sheet-inner { width: 100%; max-width: 480px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 28px 28px 0 0; padding: 0 0 max(16px, var(--sab)); max-height: 88dvh; overflow-y: auto; animation: sheetUp 0.22s ease; }
+.model-sheet-inner::-webkit-scrollbar { display: none; }
+.model-sheet-header { position: sticky; top: 0; background: var(--bg-1); padding: 14px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.model-sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border2); margin: 12px auto 0; }
+.model-sheet-title { font-size: 17px; font-weight: 800; color: var(--text-1); }
+.model-sheet-close { width: 32px; height: 32px; border-radius: 10px; border: none; background: var(--bg-3); color: var(--text-2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.model-provider-section { padding: 8px 8px 4px; }
+.model-provider-label { display: flex; align-items: center; gap: 8px; padding: 10px 12px 4px; }
+.model-provider-label-dot { width: 9px; height: 9px; border-radius: 50%; }
+.model-provider-label-name { font-size: 12px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.5px; }
+.model-provider-hint { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); padding: 0 12px 8px; line-height: 1.5; }
+.model-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; margin: 0 4px 2px; cursor: pointer; border: none; background: none; width: calc(100% - 8px); text-align: left; font-family: var(--font-ui); }
+.model-row:active { background: var(--bg-2); }
+.model-row.active-model { background: var(--accent-glow); border: 1px solid var(--accent-dim); }
+.model-row-icon { font-size: 18px; flex-shrink: 0; }
+.model-row-body { flex: 1; min-width: 0; }
+.model-row-name { font-size: 14px; font-weight: 600; color: var(--text-1); }
+.model-row-id { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.model-row-check { font-size: 16px; color: var(--accent); flex-shrink: 0; opacity: 0; }
+.model-row.active-model .model-row-check { opacity: 1; }
+
 </style>
 </head>
 <body>
@@ -1299,6 +1337,16 @@ input:focus, textarea:focus { font-size: 16px; }
             Notiva AI
           </div>
           <div class="ai-context-pill" id="ai-context-pill">No note open</div>
+        </div>
+
+        <!-- Active model badge -->
+        <div class="ai-provider-badge" id="ai-provider-badge" onclick="openModelSheet()">
+          <div class="ai-provider-dot" id="ai-provider-dot" style="background:#7c6cf8"></div>
+          <div class="ai-provider-info">
+            <div class="ai-provider-name" id="ai-provider-name">⚫ GitHub Models</div>
+            <div class="ai-provider-model" id="ai-provider-model">GPT-4o Mini  ·  gpt-4o-mini</div>
+          </div>
+          <div class="ai-provider-change">Change ›</div>
         </div>
 
         <!-- Key form (collapsible) -->
@@ -2454,8 +2502,63 @@ function switchVault() {
 //  AI SYSTEM
 // ════════════════════════════════════════════════════════════
 const AI_KEY_STORAGE = 'notiva_ai_enc';
-const AI_ENDPOINT = 'https://models.inference.ai.azure.com/chat/completions';
-const AI_MODEL = 'gpt-4o-mini';
+
+// ════════════════════════════════════════════════════════════
+//  AI MODEL CONFIG — auto-detect provider from key prefix
+// ════════════════════════════════════════════════════════════
+const AI_PROVIDERS = [
+  { id:'openai',    name:'ChatGPT (OpenAI)',   icon:'🟢', color:'#10a37f', prefix:'sk-',
+    endpoint:'https://api.openai.com/v1/chat/completions',
+    models:['gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-3.5-turbo'], defaultModel:'gpt-4o-mini',
+    hint:'Starts with sk-  •  platform.openai.com/api-keys' },
+  { id:'anthropic', name:'Claude (Anthropic)', icon:'🟠', color:'#c96442', prefix:'sk-ant-',
+    endpoint:'https://api.anthropic.com/v1/messages',
+    models:['claude-sonnet-4-5','claude-3-5-haiku-20241022','claude-3-opus-20240229'], defaultModel:'claude-3-5-haiku-20241022',
+    hint:'Starts with sk-ant-  •  console.anthropic.com' },
+  { id:'github',    name:'GitHub Models',      icon:'⚫', color:'#7c6cf8', prefix:'github_pat_',
+    endpoint:'https://models.inference.ai.azure.com/chat/completions',
+    models:['gpt-4o','gpt-4o-mini','Meta-Llama-3.1-70B-Instruct','Mistral-large-2407','DeepSeek-R1'], defaultModel:'gpt-4o-mini',
+    hint:'Starts with github_pat_  •  github.com/marketplace/models' },
+  { id:'deepseek',  name:'DeepSeek',           icon:'🔵', color:'#4d8bff', prefix:'sk-',
+    endpoint:'https://api.deepseek.com/chat/completions',
+    models:['deepseek-chat','deepseek-reasoner'], defaultModel:'deepseek-chat',
+    hint:'Starts with sk-  •  platform.deepseek.com/api_keys' },
+  { id:'groq',      name:'Groq (Fast LLMs)',   icon:'🟣', color:'#f55036', prefix:'gsk_',
+    endpoint:'https://api.groq.com/openai/v1/chat/completions',
+    models:['llama-3.3-70b-versatile','llama-3.1-8b-instant','mixtral-8x7b-32768','gemma2-9b-it'], defaultModel:'llama-3.3-70b-versatile',
+    hint:'Starts with gsk_  •  console.groq.com/keys' },
+  { id:'mistral',   name:'Mistral AI',         icon:'🟡', color:'#fa810e', prefix:'',
+    endpoint:'https://api.mistral.ai/v1/chat/completions',
+    models:['mistral-large-latest','mistral-small-latest','open-mixtral-8x7b'], defaultModel:'mistral-small-latest',
+    hint:'console.mistral.ai/api-keys' }
+];
+const AI_MODEL_STORAGE    = 'notiva_ai_model';
+const AI_PROVIDER_STORAGE = 'notiva_ai_provider';
+function detectProvider(key) {
+  if (!key) return null;
+  if (key.startsWith('github_pat_')) return AI_PROVIDERS.find(p=>p.id==='github');
+  if (key.startsWith('sk-ant-'))     return AI_PROVIDERS.find(p=>p.id==='anthropic');
+  if (key.startsWith('gsk_'))        return AI_PROVIDERS.find(p=>p.id==='groq');
+  if (key.startsWith('sk-'))         return AI_PROVIDERS.find(p=>p.id==='openai');
+  return null;
+}
+function getActiveProvider() {
+  const savedId = localStorage.getItem(AI_PROVIDER_STORAGE);
+  if (savedId) { const p=AI_PROVIDERS.find(x=>x.id===savedId); if(p) return p; }
+  const detected = detectProvider(getAPIKey());
+  return detected || AI_PROVIDERS.find(p=>p.id==='github');
+}
+function getActiveModel() {
+  const saved = localStorage.getItem(AI_MODEL_STORAGE);
+  const p = getActiveProvider();
+  if (saved && p.models.includes(saved)) return saved;
+  return p.defaultModel;
+}
+function friendlyModelName(id) {
+  const n = {'gpt-4o':'GPT-4o','gpt-4o-mini':'GPT-4o Mini','gpt-4-turbo':'GPT-4 Turbo','gpt-3.5-turbo':'GPT-3.5 Turbo','claude-sonnet-4-5':'Claude Sonnet 4.5','claude-3-5-haiku-20241022':'Claude 3.5 Haiku','claude-3-opus-20240229':'Claude 3 Opus','deepseek-chat':'DeepSeek Chat','deepseek-reasoner':'DeepSeek R1','llama-3.3-70b-versatile':'Llama 3.3 70B','llama-3.1-8b-instant':'Llama 3.1 8B','mixtral-8x7b-32768':'Mixtral 8x7B','gemma2-9b-it':'Gemma 2 9B','mistral-large-latest':'Mistral Large','mistral-small-latest':'Mistral Small','open-mixtral-8x7b':'Open Mixtral 8x7B','Meta-Llama-3.1-70B-Instruct':'Llama 3.1 70B','Mistral-large-2407':'Mistral Large','DeepSeek-R1':'DeepSeek R1'};
+  return n[id] || id;
+}
+
 
 function getFingerprint() {
   const parts = [navigator.userAgent, navigator.language, screen.colorDepth, new Date().getTimezoneOffset(), navigator.hardwareConcurrency||4, screen.width+'x'+screen.height];
@@ -2500,6 +2603,7 @@ function showAIKeyForm() {
 }
 
 function updateAIView() {
+  updateAIProviderBadge();
   const has = hasAPIKey();
   // Key form dots
   const dot = document.getElementById('ai-key-dot');
@@ -2543,10 +2647,12 @@ let aiChatHistory = [];
 async function callAI(messages) {
   const key = getAPIKey();
   if (!key) { showToast('⚠ No API key set'); return null; }
-  const res = await fetch(AI_ENDPOINT, {
+  const provider = getActiveProvider();
+  const model = getActiveModel();
+  const res = await fetch(provider.endpoint, {
     method:'POST',
     headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+key },
-    body: JSON.stringify({ model:AI_MODEL, messages, max_tokens:1024, temperature:0.7 })
+    body: JSON.stringify({ model, messages, max_tokens:1024, temperature:0.7 })
   });
   if (!res.ok) { const e=await res.json().catch(()=>{}); throw new Error((e?.error?.message)||'API error '+res.status); }
   const d = await res.json();
@@ -2806,6 +2912,70 @@ document.addEventListener('DOMContentLoaded', function() {
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
 });
+
+function openModelSheet() {
+  renderModelSheet();
+  document.getElementById('model-sheet').classList.add('visible');
+}
+function closeModelSheet() {
+  document.getElementById('model-sheet').classList.remove('visible');
+}
+function renderModelSheet() {
+  const body = document.getElementById('model-sheet-body');
+  if (!body) return;
+  const ap = getActiveProvider(), am = getActiveModel();
+  let html = '';
+  AI_PROVIDERS.forEach(prov => {
+    html += `<div class="model-provider-section">
+      <div class="model-provider-label">
+        <div class="model-provider-label-dot" style="background:${prov.color}"></div>
+        <div class="model-provider-label-name">${prov.icon} ${prov.name}</div>
+      </div>
+      <div class="model-provider-hint">${prov.hint}</div>`;
+    prov.models.forEach(m => {
+      const active = prov.id===ap.id && m===am;
+      html += `<button class="model-row ${active?'active-model':''}" onclick="selectModel('${prov.id}','${m}')">
+        <div class="model-row-icon">${prov.icon}</div>
+        <div class="model-row-body">
+          <div class="model-row-name">${friendlyModelName(m)}</div>
+          <div class="model-row-id">${m}</div>
+        </div>
+        <div class="model-row-check">✓</div>
+      </button>`;
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function selectModel(providerId, modelId) {
+  localStorage.setItem(AI_PROVIDER_STORAGE, providerId);
+  localStorage.setItem(AI_MODEL_STORAGE, modelId);
+  updateAIProviderBadge();
+  closeModelSheet();
+  showToast('✦ ' + friendlyModelName(modelId) + ' selected');
+}
+function updateAIProviderBadge() {
+  const p = getActiveProvider(), m = getActiveModel();
+  const dot=document.getElementById('ai-provider-dot');
+  const name=document.getElementById('ai-provider-name');
+  const model=document.getElementById('ai-provider-model');
+  if (dot)   dot.style.background = p.color;
+  if (name)  name.textContent = p.icon + ' ' + p.name;
+  if (model) model.textContent = friendlyModelName(m) + '  ·  ' + m;
+}
+
 </script>
+
+<!-- Model selector sheet -->
+<div class="model-sheet" id="model-sheet">
+  <div class="model-sheet-inner">
+    <div class="model-sheet-handle"></div>
+    <div class="model-sheet-header">
+      <div class="model-sheet-title">Choose AI Model</div>
+      <button class="model-sheet-close" onclick="closeModelSheet()">✕</button>
+    </div>
+    <div id="model-sheet-body"></div>
+  </div>
+</div>
 </body>
 </html>

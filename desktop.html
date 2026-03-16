@@ -2106,6 +2106,12 @@ mark {
   <div class="ai-panel-header">
     <div class="ai-header-icon">✦</div>
     <div class="ai-panel-title">Notiva AI</div>
+    <button id="desktop-model-badge" onclick="openDesktopModelModal()"
+      style="display:flex;align-items:center;gap:4px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:8px;padding:4px 8px;cursor:pointer;flex-shrink:0;min-width:0">
+      <span style="width:8px;height:8px;border-radius:50%;background:#7c6cf8;display:inline-block;margin-right:2px;flex-shrink:0"></span>
+      <span style="font-size:11px;font-weight:700;color:var(--text-secondary);font-family:'Syne',sans-serif;white-space:nowrap">⚫ GPT-4o Mini</span>
+      <span style="font-size:10px;color:var(--text-muted)">▾</span>
+    </button>
     <button class="ai-panel-key-btn" id="ai-key-icon-btn" onclick="toggleAIKeyPanel()" title="API Key settings">🔑</button>
     <button class="ai-panel-close" onclick="closeAIPanel()" title="Close">✕</button>
   </div>
@@ -4333,6 +4339,7 @@ let aiPanelOpen = false;
 let aiKeyPanelOpen = false;
 
 function openAIPanel() {
+  updateDesktopModelBadge();
   const panel = document.getElementById('ai-panel');
   if (!panel) return;
   panel.classList.add('open');
@@ -4391,14 +4398,16 @@ async function callAI(messages, onChunk) {
   const key = getAPIKey();
   if (!key) { showToast('⚠ No API key set. Click 🔑 to add one.'); return null; }
 
-  const res = await fetch(AI_ENDPOINT, {
+  const provider = getActiveProvider();
+  const model = getActiveModel();
+  const res = await fetch(provider.endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + key
     },
     body: JSON.stringify({
-      model: AI_MODEL,
+      model,
       messages,
       max_tokens: 1024,
       temperature: 0.7,
@@ -4940,6 +4949,73 @@ function rewireEditorImages() {
   editor.querySelectorAll('.img-wrap').forEach(wrap => {
     if (!wrap._wired) wireImgWrap(wrap);
   });
+}
+
+
+// ── Desktop model selector ────────────────────────────────
+function openDesktopModelModal() {
+  let modal = document.getElementById('desktop-model-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'desktop-model-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+    modal.onclick = function(e) { if(e.target===modal) closeDesktopModelModal(); };
+    document.body.appendChild(modal);
+  }
+  const ap = getActiveProvider(), am = getActiveModel();
+  let html = `<div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:18px;width:100%;max-width:520px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px var(--shadow-lg)">
+    <div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text-primary)">✦ Choose AI Model</div>
+      <button onclick="closeDesktopModelModal()" style="background:var(--bg-tertiary);border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--text-secondary);font-size:14px">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:8px">`;
+  AI_PROVIDERS.forEach(prov => {
+    html += `<div style="padding:8px 4px 2px">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px 3px">
+        <div style="width:9px;height:9px;border-radius:50%;background:${prov.color};flex-shrink:0"></div>
+        <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">${prov.icon} ${prov.name}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;padding:0 10px 6px;line-height:1.4">${prov.hint}</div>`;
+    prov.models.forEach(m => {
+      const active = prov.id===ap.id && m===am;
+      html += `<button onclick="selectDesktopModel('${prov.id}','${m}')"
+        style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin:0 4px 2px;cursor:pointer;border:${active?'1px solid var(--accent-dim)':'none'};background:${active?'var(--accent-glow)':'transparent'};width:calc(100% - 8px);text-align:left;font-family:'Syne',sans-serif">
+        <span style="font-size:16px">${prov.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${friendlyModelName(m)}</div>
+          <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">${m}</div>
+        </div>
+        <span style="color:var(--accent);font-size:14px;opacity:${active?1:0}">✓</span>
+      </button>`;
+    });
+    html += '</div>';
+  });
+  html += '</div></div>';
+  modal.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function closeDesktopModelModal() {
+  const modal = document.getElementById('desktop-model-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function selectDesktopModel(providerId, modelId) {
+  localStorage.setItem(AI_PROVIDER_STORAGE, providerId);
+  localStorage.setItem(AI_MODEL_STORAGE, modelId);
+  updateDesktopModelBadge();
+  closeDesktopModelModal();
+  showToast('✦ Model: ' + friendlyModelName(modelId));
+}
+
+function updateDesktopModelBadge() {
+  const p = getActiveProvider(), m = getActiveModel();
+  const badge = document.getElementById('desktop-model-badge');
+  if (badge) {
+    badge.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${p.color};display:inline-block;margin-right:6px;flex-shrink:0"></span>
+      <span style="font-size:11px;font-weight:700;color:var(--text-secondary)">${p.icon} ${friendlyModelName(m)}</span>
+      <span style="font-size:10px;color:var(--text-muted);margin-left:4px">▾</span>`;
+  }
 }
 
 </script>
