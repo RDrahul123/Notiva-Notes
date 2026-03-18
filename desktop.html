@@ -4343,12 +4343,77 @@ function updateAIKeyUI() {
   if (triggerBtn) triggerBtn.classList.toggle('active', has);
 }
 
+
+// ════════════════════════════════════════════════════════════
+//  AI PROVIDER + MODEL CONFIG
+// ════════════════════════════════════════════════════════════
+const AI_PROVIDERS = [
+  { id:'openai',    name:'ChatGPT (OpenAI)',   icon:'🟢', color:'#10a37f',
+    endpoint:'https://api.openai.com/v1/chat/completions',
+    models:['gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-3.5-turbo'], defaultModel:'gpt-4o-mini',
+    hint:'Starts with sk-  •  platform.openai.com/api-keys' },
+  { id:'anthropic', name:'Claude (Anthropic)', icon:'🟠', color:'#c96442',
+    endpoint:'https://api.anthropic.com/v1/messages',
+    models:['claude-sonnet-4-5','claude-3-5-haiku-20241022','claude-3-opus-20240229'], defaultModel:'claude-3-5-haiku-20241022',
+    hint:'Starts with sk-ant-  •  console.anthropic.com' },
+  { id:'github',    name:'GitHub Models',      icon:'⚫', color:'#7c6cf8',
+    endpoint:'https://models.inference.ai.azure.com/chat/completions',
+    models:['gpt-4o','gpt-4o-mini','Meta-Llama-3.1-70B-Instruct','Mistral-large-2407','DeepSeek-R1'], defaultModel:'gpt-4o-mini',
+    hint:'Starts with github_pat_  •  github.com/marketplace/models' },
+  { id:'deepseek',  name:'DeepSeek',           icon:'🔵', color:'#4d8bff',
+    endpoint:'https://api.deepseek.com/chat/completions',
+    models:['deepseek-chat','deepseek-reasoner'], defaultModel:'deepseek-chat',
+    hint:'Starts with sk-  •  platform.deepseek.com/api_keys' },
+  { id:'groq',      name:'Groq (Fast LLMs)',   icon:'🟣', color:'#f55036',
+    endpoint:'https://api.groq.com/openai/v1/chat/completions',
+    models:['llama-3.3-70b-versatile','llama-3.1-8b-instant','mixtral-8x7b-32768','gemma2-9b-it'], defaultModel:'llama-3.3-70b-versatile',
+    hint:'Starts with gsk_  •  console.groq.com/keys' },
+  { id:'mistral',   name:'Mistral AI',         icon:'🟡', color:'#fa810e',
+    endpoint:'https://api.mistral.ai/v1/chat/completions',
+    models:['mistral-large-latest','mistral-small-latest','open-mixtral-8x7b'], defaultModel:'mistral-small-latest',
+    hint:'console.mistral.ai/api-keys' }
+];
+const AI_MODEL_STORAGE    = 'notiva_ai_model';
+const AI_PROVIDER_STORAGE = 'notiva_ai_provider';
+
+function detectProvider(key) {
+  if (!key) return null;
+  if (key.startsWith('github_pat_')) return AI_PROVIDERS.find(p => p.id === 'github');
+  if (key.startsWith('sk-ant-'))     return AI_PROVIDERS.find(p => p.id === 'anthropic');
+  if (key.startsWith('gsk_'))        return AI_PROVIDERS.find(p => p.id === 'groq');
+  if (key.startsWith('sk-'))         return AI_PROVIDERS.find(p => p.id === 'openai');
+  return null;
+}
+function getActiveProvider() {
+  const savedId = localStorage.getItem(AI_PROVIDER_STORAGE);
+  if (savedId) { const p = AI_PROVIDERS.find(x => x.id === savedId); if (p) return p; }
+  const detected = detectProvider(getAPIKey ? getAPIKey() : null);
+  return detected || AI_PROVIDERS.find(p => p.id === 'github');
+}
+function getActiveModel() {
+  const saved = localStorage.getItem(AI_MODEL_STORAGE);
+  const p = getActiveProvider();
+  if (saved && p.models.includes(saved)) return saved;
+  return p.defaultModel;
+}
+function friendlyModelName(id) {
+  const n = {
+    'gpt-4o':'GPT-4o','gpt-4o-mini':'GPT-4o Mini','gpt-4-turbo':'GPT-4 Turbo','gpt-3.5-turbo':'GPT-3.5 Turbo',
+    'claude-sonnet-4-5':'Claude Sonnet 4.5','claude-3-5-haiku-20241022':'Claude 3.5 Haiku','claude-3-opus-20240229':'Claude 3 Opus',
+    'deepseek-chat':'DeepSeek Chat','deepseek-reasoner':'DeepSeek R1',
+    'llama-3.3-70b-versatile':'Llama 3.3 70B','llama-3.1-8b-instant':'Llama 3.1 8B',
+    'mixtral-8x7b-32768':'Mixtral 8x7B','gemma2-9b-it':'Gemma 2 9B',
+    'mistral-large-latest':'Mistral Large','mistral-small-latest':'Mistral Small','open-mixtral-8x7b':'Open Mixtral 8x7B',
+    'Meta-Llama-3.1-70B-Instruct':'Llama 3.1 70B','Mistral-large-2407':'Mistral Large','DeepSeek-R1':'DeepSeek R1'
+  };
+  return n[id] || id;
+}
+
 // ── Panel visibility ─────────────────────────────────────────
 let aiPanelOpen = false;
 let aiKeyPanelOpen = false;
 
 function openAIPanel() {
-  updateDesktopModelBadge();
   const panel = document.getElementById('ai-panel');
   if (!panel) return;
   panel.classList.add('open');
@@ -4359,6 +4424,8 @@ function openAIPanel() {
   aiKeyPanelOpen = false;
   const ks = document.getElementById('ai-key-section');
   if (ks) ks.style.display = 'none';
+  // Update model badge safely
+  try { updateDesktopModelBadge(); } catch(e) {}
 }
 
 function closeAIPanel() {
